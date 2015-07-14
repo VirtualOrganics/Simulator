@@ -40,7 +40,7 @@ function ObjManager( docId )
 	this.rear_side = 30;
 	this.rear_rear = 30;
 	this.turnSteps = 10;
-	this.deflectionSpeed = 0.1;
+	this.deflectionSpeed = 1.0;
 	this.turnForever = false;
 	this.bounce = false;
 	this.majorAxis = 6;
