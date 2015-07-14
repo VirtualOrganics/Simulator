@@ -16,11 +16,13 @@ function Ellipse()
 	this.x = 0;
 	this.y = 0;
 	this.angle = 0;
+	this.turnAmount = 0;
+	this.turnCount = 0;
+	this.deflection = 0;
+	this.deflectionSpeed = 0;
 	this.ax = 0;
 	this.by = 0;
 	this.speed = 0;
-	this.turnAmount = 0;
-	this.turnCount = 0;
 	this.ignoreContact = null;
 	this.vx = 0;
 	this.vy = 0;
@@ -39,11 +41,13 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	this.x = x;
 	this.y = y;
 	this.angle = angle;
+	this.turnAmount = 0;
+	this.turnCount = 0;
+	this.deflection = 0;
+	this.deflectionSpeed = 0;
 	this.ax = ax;
 	this.by = by;
 	this.speed = speed;
-	this.turnAmount = 0;
-	this.turnCount = 0;
 	this.ignoreContact = null;
 	this.vx = Math.cos(angle) * speed;
 	this.vy = Math.sin(angle) * speed;
@@ -88,6 +92,13 @@ Ellipse.prototype.update = function()
 			this.trail.pop();
 		// keep track of where we've been
 		this.trail.unshift( {x: this.x, y: this.y} );
+	}
+
+	if (this.deflectionSpeed !== 0)
+	{
+		this.deflection += this.deflectionSpeed;
+		while(this.deflection >= Math.PI) this.deflection -= Math.PI * 2.0;
+		while(this.deflection < -Math.PI) this.deflection += Math.PI * 2.0;
 	}
 
 	// turn if we're still turning
@@ -229,8 +240,7 @@ Ellipse.prototype.collisionResponse = function(c)
 	if (this.ignoreContact != c && c.ignoreContact != this)
 	{
 		// find point of contact angle on me
-//		var da = a - this.angle;
-		var da = this.angle - a;
+		var da = a - this.angle;
 		while(da >= Math.PI) da -= Math.PI * 2.0;
 		while(da < -Math.PI) da += Math.PI * 2.0;
 
@@ -393,7 +403,7 @@ Ellipse.prototype.drawEllipse = function()
 Ellipse.prototype.draw = function(ctx, showTrail)
 {
 	ctx.translate(this.x, this.y);
-	ctx.rotate(this.angle);
+	ctx.rotate(this.angle + this.deflection);
 	ctx.drawImage(Ellipse.shape, -this.ax, -this.by);
 	ctx.rotate(-this.angle);
 	ctx.translate(-this.x, -this.y);

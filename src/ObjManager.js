@@ -287,8 +287,8 @@ ObjManager.prototype.collide = function(e)
 				// the circles touch
 				var d = Math.sqrt(d2);
 				var a = Math.atan2(dy, dx);
-				var r1 = ellipseRadius(e.ax, e.by, e.angle, a - Math.PI);
-				var r2 = ellipseRadius(c.ax, c.by, c.angle, a);
+				var r1 = ellipseRadius(e.ax, e.by, e.angle + e.deflection, a - Math.PI);
+				var r2 = ellipseRadius(c.ax, c.by, c.angle + c.deflection, a);
 
 				// do the ellipses actually touch?
 				// (approximation uses distance < radius1 + radius2)
