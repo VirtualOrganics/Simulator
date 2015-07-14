@@ -44,7 +44,7 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	this.turnAmount = 0;
 	this.turnCount = 0;
 	this.deflection = 0;
-	this.deflectionSpeed = 0;
+	this.deflectionSpeed = 0.01;
 	this.ax = ax;
 	this.by = by;
 	this.speed = speed;
@@ -403,9 +403,10 @@ Ellipse.prototype.drawEllipse = function()
 Ellipse.prototype.draw = function(ctx, showTrail)
 {
 	ctx.translate(this.x, this.y);
-	ctx.rotate(this.angle + this.deflection);
+	var turn = this.angle + this.deflection;
+	ctx.rotate(turn);
 	ctx.drawImage(Ellipse.shape, -this.ax, -this.by);
-	ctx.rotate(-this.angle);
+	ctx.rotate(-turn);
 	ctx.translate(-this.x, -this.y);
 };
 
