@@ -195,13 +195,6 @@ Ellipse.prototype.drawEllipse = function()
 		{
 			px = Math.cos(a) * r + this.ax;
 			py = Math.sin(a) * r + this.by;
-
-			// draw 'nose' line to show facing direction
-			// ctx.beginPath();
-			// ctx.moveTo(this.ax, this.by);
-			// ctx.lineTo(px, py);
-			// ctx.stroke();
-
 			ctx.beginPath();
 			ctx.moveTo(px, py);
 		}
@@ -213,40 +206,43 @@ Ellipse.prototype.drawEllipse = function()
 		}
 	}
 
-
 	ctx.closePath();
 	ctx.fillStyle = this.parent.colorEllipse;
 	ctx.fill();
 
-	ctx.lineStyle = "#ffffff";
-	a = this.parent.noseAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = -this.parent.noseAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = Math.PI + this.parent.rearAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = Math.PI - this.parent.rearAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
+	if (Math.min(this.ax, this.by) > 3)
+	{
+		// draw nose and rear angles if ellipse is not tiny
+		ctx.strokeStyle = "#003f3f";
+		a = this.parent.nose_angle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = -this.parent.nose_angle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = Math.PI + this.parent.rear_angle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = Math.PI - this.parent.rear_angle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+	}
 
 	return canvas;
 };
