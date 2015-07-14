@@ -266,7 +266,7 @@ function ellipseRadius(ax, by, facing, angle)
 
 	// equation from: http://math.stackexchange.com/questions/432902/how-to-get-the-radius-of-an-ellipse-at-a-specific-angle-by-knowing-its-semi-majo
 	// r = (a.b) / sqrt(sqr(a).sqr(sin(theta)) + sqr(b).sqr(cos(theta)))
-	var r = ax * by / Math.sqrt(ax * ax * s * s + by * by + c * c);
+	var r = ax * by / Math.sqrt(ax * ax * s * s + by * by * c * c);
 	return r;
 }
 
