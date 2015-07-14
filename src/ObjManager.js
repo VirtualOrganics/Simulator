@@ -35,7 +35,7 @@ function ObjManager( docId )
 	this.areaHigh = 300;
 	this.bgColor = "#ffffff";
 	this.colorTrail = "#898989";
-	this.colorEllipse = "#00af9a";
+	this.colorEllipse = "#161616";
 
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
