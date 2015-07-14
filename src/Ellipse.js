@@ -18,6 +18,10 @@ function Ellipse()
 	this.angle = 0;
 	this.ax = 0;
 	this.by = 0;
+	this.speed = 0;
+	this.turnAmount = 0;
+	this.turnCount = 0;
+	this.ignoreContact = null;
 	this.vx = 0;
 	this.vy = 0;
 	this.trail = null;
@@ -40,6 +44,7 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	this.speed = speed;
 	this.turnAmount = 0;
 	this.turnCount = 0;
+	this.ignoreContact = null;
 	this.vx = Math.cos(angle) * speed;
 	this.vy = Math.sin(angle) * speed;
 	this.trail = [];
@@ -49,11 +54,17 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	if (!Ellipse.shape)
 		Ellipse.shape = this.drawEllipse();
 
-	return (this.parent.collide(this) === null);
+	var collList = this.parent.collide(this);
+	if (!collList || collList.length === 0)
+	{
+		this.parent.grid.add(this);
+		return true;
+	}
+	return false;
 };
 
 
-Ellipse.prototype.update = function(turnNose, turnSide, turnRear)
+Ellipse.prototype.update = function()
 {
 	// if a color change (or something else) reset the ellipse sprite, draw it again
 	if (!Ellipse.shape)
@@ -62,11 +73,12 @@ Ellipse.prototype.update = function(turnNose, turnSide, turnRear)
 	this.move(this.vx, this.vy);
 
 	// if we're colliding
-	c = this.parent.collide(this, false);
-	if (c)
+	var collList = this.parent.collide(this, false);
+	if (collList && collList.length > 0)
 	{
-		// deal with it
-		this.collisionResponse(c, turnNose, turnSide, turnRear, false);
+		// deal with each collision
+		for(var i = 0, l = collList.length; i < l; i++)
+			this.collisionResponse(collList[i]);
 	}
 
 	if ((frameCount % 7) === 0 && this.parent.showTrail > 0)
@@ -79,12 +91,17 @@ Ellipse.prototype.update = function(turnNose, turnSide, turnRear)
 	}
 
 	// turn if we're still turning
-	if (this.turnCount > 0)
+	if (this.turnCount > 0 || this.parent.turnForever)
 	{
 		this.angle += this.turnAmount;
-		this.turnCount--;
+		while(this.angle >= Math.PI) this.angle -= Math.PI * 2.0;
+		while(this.angle < -Math.PI) this.angle += Math.PI * 2.0;
 		this.vx = Math.cos(this.angle) * this.speed;
 		this.vy = Math.sin(this.angle) * this.speed;
+		if (!this.parent.turnForever && --this.turnCount === 0)
+		{
+			this.ignoreContact = null;
+		}
 	}
 };
 
@@ -94,22 +111,7 @@ Ellipse.prototype.move = function(vx, vy, moveTrail)
 	this.x += vx;
 	this.y += vy;
 
-	if (this.x < 0)
-	{
-		this.x += this.parent.areaWide;
-	}
-	if (this.x >= this.parent.areaWide)
-	{
-		this.x -= this.parent.areaWide;
-	}
-	if (this.y < 0)
-	{
-		this.y += this.parent.areaHigh;
-	}
-	if (this.y >= this.parent.areaHigh)
-	{
-		this.y -= this.parent.areaHigh;
-	}
+	this.wrap(this);
 
 	if (moveTrail)
 	{
@@ -117,67 +119,206 @@ Ellipse.prototype.move = function(vx, vy, moveTrail)
 		{
 			this.trail[i].x += vx;
 			this.trail[i].y += vy;
-			if (this.trail[i].x < 0)
+			this.wrap(this.trail[i]);
+		}
+	}
+
+	this.parent.grid.move(this);
+};
+
+
+Ellipse.prototype.wrap = function(_object)
+{
+	if (_object.x < 0)
+	{
+		if (this.parent.periodicBoundary & 2)
+			_object.x += this.parent.areaWide;
+		else
+		{
+			if (this.ignoreContact !== 2)
 			{
-				this.trail[i].x += this.parent.areaWide;
+				this.ignoreContact = 2;
+				_object.turnCount = this.parent.turnSteps;
+				if (this.angle < 0)
+					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
+				else
+					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
 			}
-			if (this.trail[i].x >= this.parent.areaWide)
+			_object.x = 0;
+		}
+	}
+	if (_object.x >= this.parent.areaWide)
+	{
+		if (this.parent.periodicBoundary & 2)
+			_object.x -= this.parent.areaWide;
+		else
+		{
+			if (this.ignoreContact !== 2)
 			{
-				this.trail[i].x -= this.parent.areaWide;
+				this.ignoreContact = 2;
+				_object.turnCount = this.parent.turnSteps;
+				if (this.angle < 0)
+					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
+				else
+					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
 			}
-			if (this.trail[i].y < 0)
+			_object.x = this.parent.areaWide - 1;
+		}
+	}
+	if (_object.y < 0)
+	{
+		if (this.parent.periodicBoundary & 1)
+			_object.y += this.parent.areaHigh;
+		else
+		{
+			if (this.ignoreContact !== 1)
 			{
-				this.trail[i].y += this.parent.areaHigh;
+				this.ignoreContact = 1;
+				_object.turnCount = this.parent.turnSteps;
+				if (this.angle < -Math.PI / 2.0)
+					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
+				else
+					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
 			}
-			if (this.trail[i].y >= this.parent.areaHigh)
+			_object.y = 0;
+		}
+	}
+	if (_object.y >= this.parent.areaHigh)
+	{
+		if (this.parent.periodicBoundary & 1)
+			_object.y -= this.parent.areaHigh;
+		else
+		{
+			if (this.ignoreContact !== 1)
 			{
-				this.trail[i].y -= this.parent.areaHigh;
+				this.ignoreContact = 1;
+				_object.turnCount = this.parent.turnSteps;
+				if (this.angle >= Math.PI / 2.0)
+					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
+				else
+					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
 			}
+			_object.y = this.parent.areaHigh - 1;
 		}
 	}
 };
 
 
-Ellipse.prototype.collisionResponse = function(c, turnNose, turnSide, turnRear, isOther)
+Ellipse.prototype.collisionResponse = function(c)
 {
 	var a = this.coll.a;
 
-	// push the collision apart by a fraction of their longest axis (max 1.0)
-	var far = Math.min(Math.max(this.ax, this.by) * 0.1, 1.0);
-	this.x -= Math.cos(a) * far;
-	this.y -= Math.sin(a) * far;
+	if (this.parent.bounce)
+	{
+		this.angle = a - Math.PI;
+		c.angle = a;
+	}
 
-	// find point of contact angle on me
-	var da = a - this.angle;
-	while(da >= Math.PI) da -= Math.PI * 2.0;
-	while(da < -Math.PI) da += Math.PI * 2.0;
+	// push the collision apart by a fraction of their longest axis (max 1.0)
+	var max = Math.max(this.ax, this.by);
+	var far = Math.min(max * 0.1, 1.0);
+	var force = this.parent.forceMultiplier * ((this.coll.r1 + this.coll.r2) - this.coll.d) / max;
+	var pushx = Math.cos(a) * far * force;
+	var pushy = Math.sin(a) * far * force;
+	this.x -= pushx;
+	this.y -= pushy;
+	c.x += pushx;
+	c.y += pushy;
+
+	this.parent.grid.move(this);
+	this.parent.grid.move(c);
+
+	if (this.ignoreContact != c && c.ignoreContact != this)
+	{
+		// find point of contact angle on me
+		var da = a - this.angle;
+		while(da >= Math.PI) da -= Math.PI * 2.0;
+		while(da < -Math.PI) da += Math.PI * 2.0;
+
+		// find point of contact on 'c'
+		var ca = a + Math.PI - c.angle;
+		while(ca >= Math.PI) ca -= Math.PI * 2.0;
+		while(ca < -Math.PI) ca += Math.PI * 2.0;
+
+		this.turn(da, ca);
+		c.turn(ca, da);
+
+		// ignore further contacts until the turn has ended or we touch something else
+		this.ignoreContact = c;
+		c.ignoreContact = this;
+	}
+};
+
+
+Ellipse.prototype.turn = function(_angle, _otherAngle)
+{
+	// turn and recalculate velocity components
+
+	var ra = _angle - Math.PI;
+	while(ra < -Math.PI) ra += Math.PI * 2.0;
+
+	var rao = _otherAngle - Math.PI;
+	while(rao < -Math.PI) rao += Math.PI * 2.0;
+
+	var myRegion = this.classifyAngle(_angle, ra);
+	var otherRegion = this.classifyAngle(_otherAngle, rao);
 
 	this.turnCount = this.parent.turnSteps;
 
-	// turn and recalculate velocity components
-	var nose = this.parent.noseAngle * Math.PI / 180;
-	if (da > -nose && da < nose)
+	if (myRegion == 1)								// nose
 	{
-		this.turnAmount = (da > 0 ? -turnNose * Math.PI / 180 : turnNose * Math.PI / 180) / this.turnCount;
+		if (otherRegion == 1)			// nose-to-nose
+			this.turnAmount = (_angle > 0 ? -this.parent.nose_nose * Math.PI / 180 : this.parent.nose_nose * Math.PI / 180) / this.turnCount;
+		else if (otherRegion == 2)		// nose-to-rear
+			this.turnAmount = (_angle > 0 ? -this.parent.nose_rear * Math.PI / 180 : this.parent.nose_rear * Math.PI / 180) / this.turnCount;
+		else 							// nose-to-side (or unclassified)
+			this.turnAmount = (_angle > 0 ? -this.parent.nose_side * Math.PI / 180 : this.parent.nose_side * Math.PI / 180) / this.turnCount;
+	}
+	else if (myRegion == 2)							// rear
+	{
+		if (otherRegion == 1)			// rear-to-nose
+			this.turnAmount = (ra > 0 ? -this.parent.rear_nose * Math.PI / 180 :  this.parent.rear_nose * Math.PI / 180) / this.turnCount;
+		else if (otherRegion == 2)		// rear-to-rear
+			this.turnAmount = (ra > 0 ? -this.parent.rear_rear * Math.PI / 180 :  this.parent.rear_rear * Math.PI / 180) / this.turnCount;
+		else 							// rear-to-side (or unclassified)
+			this.turnAmount = (ra > 0 ? -this.parent.rear_side * Math.PI / 180 :  this.parent.rear_side * Math.PI / 180) / this.turnCount;
+	}
+	else if (myRegion == 3 || myRegion === 0)		// side or unclassified
+	{
+		if (otherRegion == 1)			// side-to-nose
+			this.turnAmount = (_angle > 0 ? -this.parent.side_nose * Math.PI / 180 : this.parent.side_nose * Math.PI / 180) / this.turnCount;
+		else if (otherRegion == 2)		// side-to-rear
+			this.turnAmount = (_angle > 0 ? -this.parent.side_rear * Math.PI / 180 : this.parent.side_rear * Math.PI / 180) / this.turnCount;
+		else 							// side-to-side (or unclassified)
+			this.turnAmount = (_angle > 0 ? -this.parent.side_side * Math.PI / 180 : this.parent.side_side * Math.PI / 180) / this.turnCount;
+	}
+};
+
+
+/**
+ * [classifyAngle description]
+ *
+ * @param  {[type]} _angle [description]
+ *
+ * @return {Number} 0 = unclassified, 1 = nose, 2 = rear, 3 = side
+ */
+Ellipse.prototype.classifyAngle = function(_angle, _rearAngle)
+{	
+	var nose = this.parent.nose_angle * Math.PI / 180;
+	var rear = this.parent.rear_angle * Math.PI / 180;
+
+	if (_angle > -nose && _angle < nose)
+	{
+		return 1;
 	}
 	else
 	{
-		var rear = this.parent.rearAngle * Math.PI / 180;
-		var ra = da - Math.PI;
-		while(ra < -Math.PI) ra += Math.PI * 2.0;
-		if (ra > -rear && ra < rear)
-			this.turnAmount = (ra > 0 ? -turnRear * Math.PI / 180 :  turnRear * Math.PI / 180) / this.turnCount;
+		if (_rearAngle > -rear && _rearAngle < rear)
+			return 2;
 		else
-			this.turnAmount = (da > 0 ? -turnSide * Math.PI / 180 : turnSide * Math.PI / 180) / this.turnCount;
+			return 3;
 	}
-
-	if (!isOther)
-	{
-		// create a collision field for the thing I collided with
-		c.coll = { a: this.coll.a - Math.PI };	// flip the angle around 180 degrees
-		// activate it's own collision response (recursive, one time only due to bool parameter)
-		c.collisionResponse(this, turnNose, turnSide, turnRear, true);
-	}
+	return 0;
 };
 
 
@@ -216,28 +357,28 @@ Ellipse.prototype.drawEllipse = function()
 	{
 		// draw nose and rear angles if ellipse is not tiny
 		ctx.strokeStyle = "#003f3f";
-		a = this.parent.noseAngle * Math.PI / 180.0;
+		a = this.parent.nose_angle * Math.PI / 180.0;
 		r = ellipseRadius(this.ax, this.by, 0, a);
 		ctx.moveTo(this.ax, this.by);
 		px = Math.cos(a) * r + this.ax;
 		py = Math.sin(a) * r + this.by;
 		ctx.lineTo(px, py);
 		ctx.stroke();
-		a = -this.parent.noseAngle * Math.PI / 180.0;
+		a = -this.parent.nose_angle * Math.PI / 180.0;
 		r = ellipseRadius(this.ax, this.by, 0, a);
 		ctx.moveTo(this.ax, this.by);
 		px = Math.cos(a) * r + this.ax;
 		py = Math.sin(a) * r + this.by;
 		ctx.lineTo(px, py);
 		ctx.stroke();
-		a = Math.PI + this.parent.rearAngle * Math.PI / 180.0;
+		a = Math.PI + this.parent.rear_angle * Math.PI / 180.0;
 		r = ellipseRadius(this.ax, this.by, 0, a);
 		ctx.moveTo(this.ax, this.by);
 		px = Math.cos(a) * r + this.ax;
 		py = Math.sin(a) * r + this.by;
 		ctx.lineTo(px, py);
 		ctx.stroke();
-		a = Math.PI - this.parent.rearAngle * Math.PI / 180.0;
+		a = Math.PI - this.parent.rear_angle * Math.PI / 180.0;
 		r = ellipseRadius(this.ax, this.by, 0, a);
 		ctx.moveTo(this.ax, this.by);
 		px = Math.cos(a) * r + this.ax;
