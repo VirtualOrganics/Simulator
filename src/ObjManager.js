@@ -61,9 +61,9 @@ function ObjManager( docId )
 
 	gui.add(this, "showTrail").min(0).max(MAX_TRAIL).step(5);
 
-	this.areaWidth = gui.add(this, "areaWide").min(200).max(2000).step(10).listen();
+	this.areaWidth = gui.add(this, "areaWide").min(20).max(2000).step(10).listen();
 	this.areaWidth.onFinishChange(function(value) { if (!value) _this.areaWide = 200; _this.restartFlag = true; });
-	this.areaHeight = gui.add(this, "areaHigh").min(200).max(1000).step(10).listen();
+	this.areaHeight = gui.add(this, "areaHigh").min(20).max(1000).step(10).listen();
 	this.areaHeight.onFinishChange(function(value) { if (!value) _this.areaHigh = 200; _this.restartFlag = true; });
 
 	gui.addColor(this, "bgColor");
