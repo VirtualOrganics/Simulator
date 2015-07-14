@@ -19,57 +19,96 @@ function ObjManager( docId )
 	this.dragging = false;
 	this.restartFlag = false;
 	this.list = null;
+	this.grid = null;
+	this.showGrid = false;
+	this.gridWidth = 15;
+	this.gridHeight = 15;
 
-	this.numEllipse = 2000;
-	this.velocity = 0.6;
-	this.noseAngle = 14.0;
-	this.rearAngle = 30.0;
-	this.turnBumpNose = 30;
-	this.turnBumpSide = 46;
-	this.turnBumpRear = 31;
-	this.turnSteps = 9;
-	this.majorAxis = 4;
-	this.minorAxis = 2;
-	this.showTrail = 0;
-	this.areaWide = 300;
-	this.areaHigh = 300;
-	this.bgColor = "#ffffff";
+	this.numEllipse = 1300;
+	this.orderParameter = 0.0001;
+	this.velocity = 0.7;
+	this.forceMultiplier = 4.0;
+	this.nose_angle = 30.0;
+	this.rear_angle = 30.0;
+	this.nose_nose = 45;
+	this.nose_side = 30;
+	this.nose_rear = 0;
+	this.side_nose = 30;
+	this.side_side = 30;
+	this.side_rear = 30;
+	this.rear_nose = 30;
+	this.rear_side = 30;
+	this.rear_rear = 30;
+	this.turnSteps = 15;
+	this.turnForever = true;
+	this.bounce = false;
+	this.majorAxis = 6;
+	this.minorAxis = 3;
+	this.showTrail = 5;
+	this.areaWide = 640;
+	this.areaHigh = 500;
+	this.periodicBoundary = 3;
+	this.boundary = 90;
+	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
-	this.colorEllipse = "#161616";
+	this.colorEllipse = "#00af9a";
 
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
-	this.numCtrl = gui.add(this, "numEllipse").min(5).max(2000).step(5).listen();
+	gui.add(this, "orderParameter", 0.0, 2.0).listen();
+
+	var ellipseFolder = gui.addFolder("Ellipses");
+	this.numCtrl = ellipseFolder.add(this, "numEllipse").min(10).max(5000).step(10).listen();
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numEllipse = 1; _this.restartFlag = true; });
-	this.velCtrl = gui.add(this, "velocity").min(0.1).max(2.0).step(0.01).listen();
+	this.velCtrl = ellipseFolder.add(this, "velocity").min(0.1).max(2.0).step(0.01).listen();
 	this.velCtrl.onFinishChange(function(value) { _this.restartFlag = true; });
-
-	this.noseAngleCtrl = gui.add(this, "noseAngle").min(0).max(180).step(1).listen();
-	this.noseAngleCtrl.onChange(function(value) { Ellipse.shape = null; });
-	this.rearAngleCtrl = gui.add(this, "rearAngle").min(0).max(180).step(1).listen();
-	this.rearAngleCtrl.onChange(function(value) { Ellipse.shape = null; });
-
-	gui.add(this, "turnBumpNose").min(-179).max(179).step(1);
-	gui.add(this, "turnBumpSide").min(-179).max(179).step(1);
-	gui.add(this, "turnBumpRear").min(-179).max(179).step(1);
-	gui.add(this, "turnSteps").min(1).max(60).step(1);
-
-	this.majorCtrl = gui.add(this, "majorAxis").min(1).max(30).step(1).listen();
+	ellipseFolder.add(this, "forceMultiplier").min(0).max(10).step(0.1);
+	this.majorCtrl = ellipseFolder.add(this, "majorAxis").min(1).max(30).step(1).listen();
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
-	this.minorCtrl = gui.add(this, "minorAxis").min(1).max(30).step(1).listen();
+	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
 	this.minorCtrl.onFinishChange(function(value) { if (!value) _this.minorAxis = 1; _this.restartFlag = true; });
 
-	gui.add(this, "showTrail").min(0).max(MAX_TRAIL).step(5);
+	var collideFolder = gui.addFolder("Angles and Turns");
+	this.noseAngleCtrl = collideFolder.add(this, "nose_angle").min(0).max(180).step(1).listen();
+	this.noseAngleCtrl.onChange(function(value) { Ellipse.shape = null; });
+	this.rearAngleCtrl = collideFolder.add(this, "rear_angle").min(0).max(180).step(1).listen();
+	this.rearAngleCtrl.onChange(function(value) { Ellipse.shape = null; });
 
-	this.areaWidth = gui.add(this, "areaWide").min(20).max(2000).step(10).listen();
+	collideFolder.add(this, "boundary").min(-180).max(180).step(1);
+	collideFolder.add(this, "nose_nose").min(-180).max(180).step(1);
+	collideFolder.add(this, "nose_side").min(-180).max(180).step(1);
+	collideFolder.add(this, "nose_rear").min(-180).max(180).step(1);
+	collideFolder.add(this, "side_nose").min(-180).max(180).step(1);
+	collideFolder.add(this, "side_side").min(-180).max(180).step(1);
+	collideFolder.add(this, "side_rear").min(-180).max(180).step(1);
+	collideFolder.add(this, "rear_nose").min(-180).max(180).step(1);
+	collideFolder.add(this, "rear_side").min(-180).max(180).step(1);
+	collideFolder.add(this, "rear_rear").min(-180).max(180).step(1);
+	collideFolder.add(this, "turnSteps").min(1).max(60).step(1);
+	collideFolder.add(this, "turnForever");
+	collideFolder.add(this, "bounce");
+
+	var grfxFolder = gui.addFolder("World");
+	grfxFolder.add(this, "showTrail").min(0).max(MAX_TRAIL).step(5);
+
+	this.areaWidth = grfxFolder.add(this, "areaWide").min(200).max(2000).step(10).listen();
 	this.areaWidth.onFinishChange(function(value) { if (!value) _this.areaWide = 200; _this.restartFlag = true; });
-	this.areaHeight = gui.add(this, "areaHigh").min(20).max(1000).step(10).listen();
+	this.areaHeight = grfxFolder.add(this, "areaHigh").min(200).max(1000).step(10).listen();
 	this.areaHeight.onFinishChange(function(value) { if (!value) _this.areaHigh = 200; _this.restartFlag = true; });
 
-	gui.addColor(this, "bgColor");
-	gui.addColor(this, "colorTrail");
-	this.colCtrl = gui.addColor(this, "colorEllipse").listen();
+	grfxFolder.add(this, "periodicBoundary", { none:0, vertical:1, horizontal:2, both:3 });
+
+	grfxFolder.addColor(this, "bgColor");
+	grfxFolder.addColor(this, "colorTrail");
+	this.colCtrl = grfxFolder.addColor(this, "colorEllipse").listen();
 	this.colCtrl.onChange(function(value) { Ellipse.shape = null; });
+
+	var gridFolder = gui.addFolder("Grid");
+	gridFolder.add(this, "showGrid");
+	var gw = gridFolder.add(this, "gridWidth").min(1).max(50).step(1);
+	gw.onFinishChange(function(value) { _this.restartFlag = true; });
+	var gh = gridFolder.add(this, "gridHeight").min(1).max(50).step(1);
+	gh.onFinishChange(function(value) { _this.restartFlag = true; });
 
     // detect mouse click for pause and drag
 	document.body.onmousedown = function(e) {
@@ -126,20 +165,16 @@ ObjManager.prototype.create = function()
 	// resize the canvas
 	canvas.width = this.areaWide;
 	canvas.height = this.areaHigh;
-	// erase the entire canvas
-	// ctx.clearRect(0, 0, canvas.width, canvas.height);
-	// console.log("restore context");
-	// ctx.restore();
-	// // delimit the clipping rectangle
-	// ctx.rect(0, 0, this.areaWide, this.areaHigh);
-	// // set clipping to stop ellipses sticking out at edges
-	// ctx.clip();
+
+	var max = Math.max(this.minorAxis, this.majorAxis);
+	this.grid = new Grid();
+	this.grid.create(this.gridWidth, this.gridHeight, this.areaWide / this.gridWidth, this.areaHigh / this.gridHeight, max, max);
 
 	this.list = [];
 	for(var i = 0; i < this.numEllipse; i++)
 	{
 		var e = new Ellipse();
-		var angle = Math.floor(Math.random() * (Math.PI * 2.0 / (this.turnBumpNose * Math.PI / 180.0))) * this.turnBumpNose * Math.PI / 180 - Math.PI;
+		var angle = Math.random() * (Math.PI * 2.0);
 		// keep trying different locations until we find one that isn't colliding with an existing Ellipse
 		var c = 0;
 		while( c < 10000 &&
@@ -196,12 +231,24 @@ ObjManager.prototype.update = function()
 		return;
 	}
 
+	var sumV = { x: 0, y:0 };
+	var sumC = 0;
+
 	for(var i = 0, l = this.list.length; i < l; i++)
 	{
-		if (this.list[i])
-			this.list[i].update(this.turnBumpNose, this.turnBumpSide, this.turnBumpRear);
+		var e = this.list[i];
+		if (e)
+		{
+			e.update();
+			sumV.x += e.vx;
+			sumV.y += e.vy;
+			sumC++;
+		}
 	}
 	this.draw();
+
+	// calculate average normalised velocity for all objects
+	this.orderParameter = Math.sqrt(sumV.x * sumV.x + sumV.y * sumV.y) / sumC;
 };
 
 
@@ -221,9 +268,13 @@ ObjManager.prototype.moveAll = function(_dx, _dy)
 ObjManager.prototype.collide = function(e)
 {
 	var who = null;
-	for(var i = 0, l = this.list.length; i < l; i++)
+
+	var list = this.grid.neighbours(e, true);
+	var collList = [];
+
+	for(var i = 0, l = list.length; i < l; i++)
 	{
-		var c = this.list[i];
+		var c = list[i];
 		if (c && c != e)
 		{
 			// circular range check first (quick reject)
@@ -246,12 +297,13 @@ ObjManager.prototype.collide = function(e)
 				{
 					// store collision partials
 					e.coll = { d: d, a: a, r1: r1, r2: r2 };
-					return c;
+					collList.push(c);
 				}
 			}
 		}
 	}
-	return who;
+	
+	return collList;
 };
 
 
@@ -275,6 +327,9 @@ ObjManager.prototype.draw = function()
 {
 	ctx.fillStyle = this.bgColor;
 	ctx.fillRect(0, 0, this.areaWide, this.areaHigh);
+
+	if (this.showGrid)
+		this.grid.draw();
 
 	var i, l;
 	if (this.showTrail)
