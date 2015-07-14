@@ -27,7 +27,7 @@ function ObjManager( docId )
 	this.numEllipse = 1300;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.7;
-	this.forceMultiplier = 4.0;
+	this.forceMultiplier = 1.0;
 	this.nose_angle = 30.0;
 	this.rear_angle = 30.0;
 	this.nose_nose = 45;
@@ -39,13 +39,13 @@ function ObjManager( docId )
 	this.rear_nose = 30;
 	this.rear_side = 30;
 	this.rear_rear = 30;
-	this.turnSteps = 15;
-	this.turnForever = true;
+	this.turnSteps = 10;
+	this.turnForever = false;
 	this.bounce = false;
 	this.majorAxis = 6;
 	this.minorAxis = 3;
 	this.showTrail = 5;
-	this.areaWide = 640;
+	this.areaWide = 500;
 	this.areaHigh = 500;
 	this.periodicBoundary = 3;
 	this.boundary = 90;
@@ -62,7 +62,7 @@ function ObjManager( docId )
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numEllipse = 1; _this.restartFlag = true; });
 	this.velCtrl = ellipseFolder.add(this, "velocity").min(0.1).max(2.0).step(0.01).listen();
 	this.velCtrl.onFinishChange(function(value) { _this.restartFlag = true; });
-	ellipseFolder.add(this, "forceMultiplier").min(0).max(10).step(0.1);
+	ellipseFolder.add(this, "forceMultiplier").min(0).max(2).step(0.1);
 	this.majorCtrl = ellipseFolder.add(this, "majorAxis").min(1).max(30).step(1).listen();
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();

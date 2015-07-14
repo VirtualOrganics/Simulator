@@ -214,12 +214,10 @@ Ellipse.prototype.collisionResponse = function(c)
 		c.angle = a;
 	}
 
-	// push the collision apart by a fraction of their longest axis (max 1.0)
-	var max = Math.max(this.ax, this.by);
-	var far = Math.min(max * 0.1, 1.0);
-	var force = this.parent.forceMultiplier * ((this.coll.r1 + this.coll.r2) - this.coll.d) / max;
-	var pushx = Math.cos(a) * far * force;
-	var pushy = Math.sin(a) * far * force;
+	// push the collision apart
+	var force = this.parent.forceMultiplier;
+	var pushx = Math.cos(a) * force;
+	var pushy = Math.sin(a) * force;
 	this.x -= pushx;
 	this.y -= pushy;
 	c.x += pushx;
@@ -231,7 +229,8 @@ Ellipse.prototype.collisionResponse = function(c)
 	if (this.ignoreContact != c && c.ignoreContact != this)
 	{
 		// find point of contact angle on me
-		var da = a - this.angle;
+//		var da = a - this.angle;
+		var da = this.angle - a;
 		while(da >= Math.PI) da -= Math.PI * 2.0;
 		while(da < -Math.PI) da += Math.PI * 2.0;
 
