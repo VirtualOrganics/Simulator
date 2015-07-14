@@ -40,6 +40,7 @@ function ObjManager( docId )
 	this.rear_side = 30;
 	this.rear_rear = 30;
 	this.turnSteps = 10;
+	this.deflectionSpeed = 0.1;
 	this.turnForever = false;
 	this.bounce = false;
 	this.majorAxis = 6;
@@ -85,6 +86,8 @@ function ObjManager( docId )
 	collideFolder.add(this, "rear_side").min(-180).max(180).step(1);
 	collideFolder.add(this, "rear_rear").min(-180).max(180).step(1);
 	collideFolder.add(this, "turnSteps").min(1).max(60).step(1);
+	var def = collideFolder.add(this, "deflectionSpeed").min(0).max(10).step(0.1);
+	def.onFinishChange(function(value) { _this.restartFlag = true; });
 	collideFolder.add(this, "turnForever");
 	collideFolder.add(this, "bounce");
 
