@@ -282,6 +282,7 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 			this.turnAmount = (_angle > 0 ? -this.parent.nose_rear * Math.PI / 180 : this.parent.nose_rear * Math.PI / 180) / this.turnCount;
 		else 							// nose-to-side (or unclassified)
 			this.turnAmount = (_angle > 0 ? -this.parent.nose_side * Math.PI / 180 : this.parent.nose_side * Math.PI / 180) / this.turnCount;
+		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(_angle);
 	}
 	else if (myRegion == 2)							// rear
 	{
@@ -291,6 +292,7 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 			this.turnAmount = (ra > 0 ? -this.parent.rear_rear * Math.PI / 180 :  this.parent.rear_rear * Math.PI / 180) / this.turnCount;
 		else 							// rear-to-side (or unclassified)
 			this.turnAmount = (ra > 0 ? -this.parent.rear_side * Math.PI / 180 :  this.parent.rear_side * Math.PI / 180) / this.turnCount;
+		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(ra);
 	}
 	else if (myRegion == 3 || myRegion === 0)		// side or unclassified
 	{
@@ -300,6 +302,7 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 			this.turnAmount = (_angle > 0 ? -this.parent.side_rear * Math.PI / 180 : this.parent.side_rear * Math.PI / 180) / this.turnCount;
 		else 							// side-to-side (or unclassified)
 			this.turnAmount = (_angle > 0 ? -this.parent.side_side * Math.PI / 180 : this.parent.side_side * Math.PI / 180) / this.turnCount;
+		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(_angle);
 	}
 };
 
