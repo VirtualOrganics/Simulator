@@ -36,7 +36,7 @@ function ObjManager( docId )
 	this.side_nose = 30;
 	this.side_side = 30;
 	this.side_rear = 30;
-	this.rear_nose = 30;
+	this.rear_nose = 0;
 	this.rear_side = 30;
 	this.rear_rear = 30;
 	this.turnSteps = 10;
