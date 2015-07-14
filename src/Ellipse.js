@@ -142,12 +142,13 @@ Ellipse.prototype.collisionResponse = function(c, turnNose, turnSide, turnRear, 
 {
 	var a = this.coll.a;
 
-	// push the collision apart
-	this.x -= Math.cos(a);
-	this.y -= Math.sin(a);
+	// push the collision apart by a fraction of their longest axis (max 1.0)
+	var far = Math.min(Math.max(this.ax, this.by) * 0.1, 1.0);
+	this.x -= Math.cos(a) * far;
+	this.y -= Math.sin(a) * far;
 
 	// find point of contact angle on me
-	var da = this.angle - a;
+	var da = a - this.angle;
 	while(da >= Math.PI) da -= Math.PI * 2.0;
 	while(da < -Math.PI) da += Math.PI * 2.0;
 
@@ -157,16 +158,17 @@ Ellipse.prototype.collisionResponse = function(c, turnNose, turnSide, turnRear, 
 	var nose = this.parent.noseAngle * Math.PI / 180;
 	if (da > -nose && da < nose)
 	{
-		this.turnAmount = (da < 0 ? -turnNose * Math.PI / 180 : turnNose * Math.PI / 180) / this.turnCount;
+		this.turnAmount = (da > 0 ? -turnNose * Math.PI / 180 : turnNose * Math.PI / 180) / this.turnCount;
 	}
 	else
 	{
 		var rear = this.parent.rearAngle * Math.PI / 180;
 		var ra = da - Math.PI;
+		while(ra < -Math.PI) ra += Math.PI * 2.0;
 		if (ra > -rear && ra < rear)
-			this.turnAmount = (ra < 0 ? -turnRear * Math.PI / 180 :  turnRear * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (ra > 0 ? -turnRear * Math.PI / 180 :  turnRear * Math.PI / 180) / this.turnCount;
 		else
-			this.turnAmount = (da < 0 ? -turnSide * Math.PI / 180 : turnSide * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (da > 0 ? -turnSide * Math.PI / 180 : turnSide * Math.PI / 180) / this.turnCount;
 	}
 
 	if (!isOther)
@@ -195,13 +197,6 @@ Ellipse.prototype.drawEllipse = function()
 		{
 			px = Math.cos(a) * r + this.ax;
 			py = Math.sin(a) * r + this.by;
-
-			// draw 'nose' line to show facing direction
-			// ctx.beginPath();
-			// ctx.moveTo(this.ax, this.by);
-			// ctx.lineTo(px, py);
-			// ctx.stroke();
-
 			ctx.beginPath();
 			ctx.moveTo(px, py);
 		}
@@ -213,40 +208,43 @@ Ellipse.prototype.drawEllipse = function()
 		}
 	}
 
-
 	ctx.closePath();
 	ctx.fillStyle = this.parent.colorEllipse;
 	ctx.fill();
 
-	ctx.lineStyle = "#ffffff";
-	a = this.parent.noseAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = -this.parent.noseAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = Math.PI + this.parent.rearAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
-	a = Math.PI - this.parent.rearAngle * Math.PI / 180.0;
-	r = ellipseRadius(this.ax, this.by, 0, a);
-	ctx.moveTo(this.ax, this.by);
-	px = Math.cos(a) * r + this.ax;
-	py = Math.sin(a) * r + this.by;
-	ctx.lineTo(px, py);
-	ctx.stroke();
+	if (Math.min(this.ax, this.by) > 3)
+	{
+		// draw nose and rear angles if ellipse is not tiny
+		ctx.strokeStyle = "#003f3f";
+		a = this.parent.noseAngle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = -this.parent.noseAngle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = Math.PI + this.parent.rearAngle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+		a = Math.PI - this.parent.rearAngle * Math.PI / 180.0;
+		r = ellipseRadius(this.ax, this.by, 0, a);
+		ctx.moveTo(this.ax, this.by);
+		px = Math.cos(a) * r + this.ax;
+		py = Math.sin(a) * r + this.by;
+		ctx.lineTo(px, py);
+		ctx.stroke();
+	}
 
 	return canvas;
 };
