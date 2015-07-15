@@ -45,7 +45,7 @@ function ObjManager( docId )
 	this.rear_rear = 30;
 	this.turnSteps = 12;
 	this.deflectionDir = "2";
-	this.deflectionSpeed = -0.01;
+	this.deflectionSpeed = 0.01;
 	this.turnForever = false;
 	this.bounce = false;
 	this.showTrail = 0;
@@ -66,7 +66,7 @@ function ObjManager( docId )
 	this.numCtrl.onFinishChange(function(value) { if (!value) _this.numEllipse = 1; _this.restartFlag = true; });
 	this.velCtrl = ellipseFolder.add(this, "velocity").min(0.1).max(2.0).step(0.01).listen();
 	this.velCtrl.onFinishChange(function(value) { _this.restartFlag = true; });
-	ellipseFolder.add(this, "forceMultiplier").min(0).max(2).step(0.1);
+	ellipseFolder.add(this, "forceMultiplier").min(0.0).max(2.0).step(0.1);
 	this.majorCtrl = ellipseFolder.add(this, "majorAxis").min(1).max(30).step(1).listen();
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
@@ -94,7 +94,7 @@ function ObjManager( docId )
 	collideFolder.add(this, "rear_rear").min(-180).max(180).step(1);
 	collideFolder.add(this, "turnSteps").min(1).max(60).step(1);
 	collideFolder.add(this, "deflectionDir", { mirror:1, match:2 });
-	var def = collideFolder.add(this, "deflectionSpeed").min(0).max(10).step(0.1);
+	var def = collideFolder.add(this, "deflectionSpeed").min(0.0).max(10.0).step(0.1);
 	def.onFinishChange(function(value) { _this.restartFlag = true; });
 	collideFolder.add(this, "turnForever");
 	collideFolder.add(this, "bounce");
