@@ -289,7 +289,9 @@ ObjManager.prototype.collide = function(e)
 			var dx = c.x - e.x;
 			var dy = c.y - e.y;
 			var d2 = dx * dx + dy * dy;
-			var s2 = (e.ax + c.ax) * (e.ax + c.ax);
+			var maxe = Math.max(e.ax, e.by);
+			var maxc = Math.max(c.ax, c.by);
+			var s2 = (maxe + maxc) * (maxe + maxc);
 			if (d2 <= s2)
 			{
 				// the circles touch
