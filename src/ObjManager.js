@@ -21,16 +21,16 @@ function ObjManager( docId )
 	this.list = null;
 	this.grid = null;
 	this.showGrid = false;
-	this.gridWidth = 7;
-	this.gridHeight = 7;
+	this.gridWidth = 15;
+	this.gridHeight = 15;
 
-	this.numEllipse = 10;
-	this.majorAxis = 30;
-	this.minorAxis = 20;
+	this.numEllipse = 800;
+	this.majorAxis = 8;
+	this.minorAxis = 4;
 	this.orderParameter = 0.0001;
-	this.velocity = 0.7;
+	this.velocity = 0.8;
 	this.forceMultiplier = 1.0;
-	this.pivot = 0.1;
+	this.pivot = 0.66;
 	this.showAngles = false;
 	this.nose_angle = 30.0;
 	this.rear_angle = 30.0;
@@ -43,14 +43,14 @@ function ObjManager( docId )
 	this.rear_nose = 0;
 	this.rear_side = 30;
 	this.rear_rear = 30;
-	this.turnSteps = 10;
+	this.turnSteps = 12;
 	this.deflectionDir = "2";
-	this.deflectionSpeed = 0.0;
+	this.deflectionSpeed = -0.01;
 	this.turnForever = false;
 	this.bounce = false;
-	this.showTrail = 5;
-	this.areaWide = 500;
-	this.areaHigh = 500;
+	this.showTrail = 0;
+	this.areaWide = 400;
+	this.areaHigh = 400;
 	this.periodicBoundary = 3;
 	this.boundary = 90;
 	this.bgColor = "#101010";
@@ -71,7 +71,7 @@ function ObjManager( docId )
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
 	this.minorCtrl.onFinishChange(function(value) { if (!value) _this.minorAxis = 1; _this.restartFlag = true; });
-	var piv = ellipseFolder.add(this, "pivot").min(-1).max(1).step(0.05);
+	var piv = ellipseFolder.add(this, "pivot").min(-1.0).max(1.0).step(0.05);
 	piv.onChange(function(value) { Ellipse.shape = null; });
 	var showAng = ellipseFolder.add(this, "showAngles").listen();
 	showAng.onChange(function(value) { Ellipse.shape = null; });
@@ -179,6 +179,7 @@ ObjManager.prototype.create = function()
 
 	var max = Math.max(this.minorAxis, this.majorAxis);
 	this.grid = new Grid();
+	// Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _objHigh)
 	this.grid.create(this.gridWidth, this.gridHeight, this.areaWide / this.gridWidth, this.areaHigh / this.gridHeight, max, max);
 
 	this.list = [];
@@ -283,16 +284,16 @@ ObjManager.prototype.collide = function(e)
 	var list = this.grid.neighbours(e, true);
 	var collList = [];
 
-	var ex = e.x + e.ax * Math.cos(e.angle) * this.pivot;
-	var ey = e.y + e.ax * Math.sin(e.angle) * this.pivot;
+	var ex = e.x - e.ax * Math.cos(e.angle) * this.pivot;
+	var ey = e.y - e.ax * Math.sin(e.angle) * this.pivot;
 
 	for(var i = 0, l = list.length; i < l; i++)
 	{
 		var c = list[i];
 		if (c && c != e)
 		{
-			var cx = c.x + c.ax * Math.cos(c.angle) * this.pivot;
-			var cy = c.y + c.ax * Math.sin(c.angle) * this.pivot;
+			var cx = c.x - c.ax * Math.cos(c.angle) * this.pivot;
+			var cy = c.y - c.ax * Math.sin(c.angle) * this.pivot;
 
 			// circular range check first (quick reject)
 			var dx = cx - ex;
