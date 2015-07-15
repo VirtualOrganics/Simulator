@@ -279,11 +279,11 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 	if (myRegion == 1)								// nose
 	{
 		if (otherRegion == 1)			// nose-to-nose
-			this.turnAmount = (_angle > 0 ? -this.parent.nose_nose * Math.PI / 180 : this.parent.nose_nose * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.nose_nose * Math.PI / 180 : this.parent.nose_nose * Math.PI / 180) / this.turnCount;
 		else if (otherRegion == 2)		// nose-to-rear
-			this.turnAmount = (_angle > 0 ? -this.parent.nose_rear * Math.PI / 180 : this.parent.nose_rear * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.nose_rear * Math.PI / 180 : this.parent.nose_rear * Math.PI / 180) / this.turnCount;
 		else 							// nose-to-side (or unclassified)
-			this.turnAmount = (_angle > 0 ? -this.parent.nose_side * Math.PI / 180 : this.parent.nose_side * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.nose_side * Math.PI / 180 : this.parent.nose_side * Math.PI / 180) / this.turnCount;
 		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(_angle);
 		if (this.parent.deflectionDir === "1")		// mirror
 			this.deflectionSpeed = -this.deflectionSpeed;
@@ -291,11 +291,11 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 	else if (myRegion == 2)							// rear
 	{
 		if (otherRegion == 1)			// rear-to-nose
-			this.turnAmount = (ra > 0 ? -this.parent.rear_nose * Math.PI / 180 :  this.parent.rear_nose * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (ra >= 0 ? -this.parent.rear_nose * Math.PI / 180 :  this.parent.rear_nose * Math.PI / 180) / this.turnCount;
 		else if (otherRegion == 2)		// rear-to-rear
-			this.turnAmount = (ra > 0 ? -this.parent.rear_rear * Math.PI / 180 :  this.parent.rear_rear * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (ra >= 0 ? -this.parent.rear_rear * Math.PI / 180 :  this.parent.rear_rear * Math.PI / 180) / this.turnCount;
 		else 							// rear-to-side (or unclassified)
-			this.turnAmount = (ra > 0 ? -this.parent.rear_side * Math.PI / 180 :  this.parent.rear_side * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (ra >= 0 ? -this.parent.rear_side * Math.PI / 180 :  this.parent.rear_side * Math.PI / 180) / this.turnCount;
 		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(ra);
 		if (this.parent.deflectionDir === "1")		// mirror
 			this.deflectionSpeed = -this.deflectionSpeed;
@@ -303,11 +303,11 @@ Ellipse.prototype.turn = function(_angle, _otherAngle)
 	else if (myRegion == 3 || myRegion === 0)		// side or unclassified
 	{
 		if (otherRegion == 1)			// side-to-nose
-			this.turnAmount = (_angle > 0 ? -this.parent.side_nose * Math.PI / 180 : this.parent.side_nose * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.side_nose * Math.PI / 180 : this.parent.side_nose * Math.PI / 180) / this.turnCount;
 		else if (otherRegion == 2)		// side-to-rear
-			this.turnAmount = (_angle > 0 ? -this.parent.side_rear * Math.PI / 180 : this.parent.side_rear * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.side_rear * Math.PI / 180 : this.parent.side_rear * Math.PI / 180) / this.turnCount;
 		else 							// side-to-side (or unclassified)
-			this.turnAmount = (_angle > 0 ? -this.parent.side_side * Math.PI / 180 : this.parent.side_side * Math.PI / 180) / this.turnCount;
+			this.turnAmount = (_angle >= 0 ? -this.parent.side_side * Math.PI / 180 : this.parent.side_side * Math.PI / 180) / this.turnCount;
 		this.deflectionSpeed = this.parent.deflectionSpeed * Math.PI / 180 * -Math.sign(_angle);
 		if (this.parent.deflectionDir === "1")		// mirror
 			this.deflectionSpeed = -this.deflectionSpeed;
