@@ -407,6 +407,12 @@ Ellipse.prototype.drawEllipse = function()
 		py = Math.sin(a) * r + this.by;
 		ctx.lineTo(px, py);
 		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.arc(this.ax - this.ax * this.parent.pivot, this.by, 2.0, 0, Math.PI * 2.0);
+		ctx.stroke();
+		ctx.fillStyle = "#ffffff";
+		ctx.fill();
 	}
 
 	return canvas;
@@ -418,7 +424,7 @@ Ellipse.prototype.draw = function(ctx, showTrail)
 	ctx.translate(this.x, this.y);
 	var turn = this.angle + this.deflection;
 	ctx.rotate(turn);
-	ctx.drawImage(Ellipse.shape, -this.ax, -this.by);
+	ctx.drawImage(Ellipse.shape, -this.ax + this.ax * this.parent.pivot, -this.by);
 	ctx.rotate(-turn);
 	ctx.translate(-this.x, -this.y);
 };

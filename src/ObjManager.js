@@ -21,13 +21,16 @@ function ObjManager( docId )
 	this.list = null;
 	this.grid = null;
 	this.showGrid = false;
-	this.gridWidth = 10;
-	this.gridHeight = 10;
+	this.gridWidth = 7;
+	this.gridHeight = 7;
 
-	this.numEllipse = 1300;
+	this.numEllipse = 10;
+	this.majorAxis = 30;
+	this.minorAxis = 20;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.7;
 	this.forceMultiplier = 1.0;
+	this.pivot = 0.1;
 	this.showAngles = false;
 	this.nose_angle = 30.0;
 	this.rear_angle = 30.0;
@@ -42,11 +45,9 @@ function ObjManager( docId )
 	this.rear_rear = 30;
 	this.turnSteps = 10;
 	this.deflectionDir = "2";
-	this.deflectionSpeed = 1.0;
+	this.deflectionSpeed = 0.0;
 	this.turnForever = false;
 	this.bounce = false;
-	this.majorAxis = 6;
-	this.minorAxis = 3;
 	this.showTrail = 5;
 	this.areaWide = 500;
 	this.areaHigh = 500;
@@ -70,6 +71,8 @@ function ObjManager( docId )
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
 	this.minorCtrl.onFinishChange(function(value) { if (!value) _this.minorAxis = 1; _this.restartFlag = true; });
+	var piv = ellipseFolder.add(this, "pivot").min(-1).max(1).step(0.05);
+	piv.onChange(function(value) { Ellipse.shape = null; });
 	var showAng = ellipseFolder.add(this, "showAngles").listen();
 	showAng.onChange(function(value) { Ellipse.shape = null; });
 
@@ -280,14 +283,20 @@ ObjManager.prototype.collide = function(e)
 	var list = this.grid.neighbours(e, true);
 	var collList = [];
 
+	var ex = e.x + e.ax * Math.cos(e.angle) * this.pivot;
+	var ey = e.y + e.ax * Math.sin(e.angle) * this.pivot;
+
 	for(var i = 0, l = list.length; i < l; i++)
 	{
 		var c = list[i];
 		if (c && c != e)
 		{
+			var cx = c.x + c.ax * Math.cos(c.angle) * this.pivot;
+			var cy = c.y + c.ax * Math.sin(c.angle) * this.pivot;
+
 			// circular range check first (quick reject)
-			var dx = c.x - e.x;
-			var dy = c.y - e.y;
+			var dx = cx - ex;
+			var dy = cy - ey;
 			var d2 = dx * dx + dy * dy;
 			var maxe = Math.max(e.ax, e.by);
 			var maxc = Math.max(c.ax, c.by);
