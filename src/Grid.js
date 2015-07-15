@@ -29,8 +29,8 @@ Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _
 	this.high = _high;
 	this.cellWide = _cellWide;
 	this.cellHigh = _cellHigh;
-	this.objWide = _objWide;
-	this.objHigh = _objHigh;
+	this.objWide = _objWide * 2.0;
+	this.objHigh = _objHigh * 2.0;
 
 	this.grid = [];
 	for(var x = 0; x < _wide; x++)
@@ -125,13 +125,13 @@ Grid.prototype.neighbours = function(_obj, _overlap)
 				var left = false, right = false, top = false, bottom = false;
 				// add contents of any neighbouring cells that could overlap far enough to touch the object
 				if (gx > 0)
-					if (_obj.x - this.objWide >= (gx - 1) * this.cellWide)
+					if (_obj.x - this.objWide <= gx * this.cellWide)
 						left = true;
 				if (gx < this.wide - 1)
 					if (_obj.x + this.objWide >= (gx + 1) * this.cellWide)
 						right = true;
 				if (gy > 0)
-					if (_obj.y - this.objHigh >= (gy - 1) * this.cellHigh)
+					if (_obj.y - this.objHigh <= gy * this.cellHigh)
 						top = true;
 				if (gy < this.high - 1)
 					if (_obj.y + this.objHigh >= (gy + 1) * this.cellHigh)
