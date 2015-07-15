@@ -51,8 +51,8 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	this.by = by;
 	this.speed = speed;
 	this.ignoreContact = null;
-	this.vx = Math.cos(angle) * speed;
-	this.vy = Math.sin(angle) * speed;
+	this.vx = Math.cos(this.angle) * speed;
+	this.vy = Math.sin(this.angle) * speed;
 	this.trail = [];
 	this.trail.unshift( {x: this.x, y: this.y} );
 
@@ -235,10 +235,10 @@ Ellipse.prototype.collisionResponse = function(c)
 	var pushy = Math.sin(a) * force;
 	this.x -= pushx;
 	this.y -= pushy;
+	this.parent.grid.move(this);
+
 	c.x += pushx;
 	c.y += pushy;
-
-	this.parent.grid.move(this);
 	this.parent.grid.move(c);
 
 	if (this.ignoreContact != c && c.ignoreContact != this)
@@ -409,7 +409,7 @@ Ellipse.prototype.drawEllipse = function()
 		ctx.stroke();
 
 		ctx.beginPath();
-		ctx.arc(this.ax - this.ax * this.parent.pivot, this.by, 2.0, 0, Math.PI * 2.0);
+		ctx.arc(this.ax + this.ax * this.parent.pivot, this.by, 2.0, 0, Math.PI * 2.0);
 		ctx.stroke();
 		ctx.fillStyle = "#ffffff";
 		ctx.fill();
@@ -424,7 +424,7 @@ Ellipse.prototype.draw = function(ctx, showTrail)
 	ctx.translate(this.x, this.y);
 	var turn = this.angle + this.deflection;
 	ctx.rotate(turn);
-	ctx.drawImage(Ellipse.shape, -this.ax + this.ax * this.parent.pivot, -this.by);
+	ctx.drawImage(Ellipse.shape, -this.ax - this.ax * this.parent.pivot, -this.by);
 	ctx.rotate(-turn);
 	ctx.translate(-this.x, -this.y);
 };
