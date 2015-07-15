@@ -307,6 +307,7 @@ ObjManager.prototype.collide = function(e)
 				{
 					// store collision partials
 					e.coll = { d: d, a: a, r1: r1, r2: r2 };
+					c.coll = { d: d, a: a - Math.PI, r1: r1, r2: r2 };
 					collList.push(c);
 				}
 			}

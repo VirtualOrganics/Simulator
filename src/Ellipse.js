@@ -82,6 +82,8 @@ Ellipse.prototype.update = function()
 	var collList = this.parent.collide(this, false);
 	if (collList && collList.length > 0)
 	{
+		// sort collisions to deal with the biggest overlap first (smaller separating 'd' = bigger overlap)
+		collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
 		// deal with each collision
 		for(var i = 0, l = collList.length; i < l; i++)
 			this.collisionResponse(collList[i]);
