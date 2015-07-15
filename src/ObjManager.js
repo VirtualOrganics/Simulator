@@ -21,8 +21,8 @@ function ObjManager( docId )
 	this.list = null;
 	this.grid = null;
 	this.showGrid = false;
-	this.gridWidth = 15;
-	this.gridHeight = 15;
+	this.gridWidth = 10;
+	this.gridHeight = 10;
 
 	this.numEllipse = 1300;
 	this.orderParameter = 0.0001;
@@ -182,7 +182,7 @@ ObjManager.prototype.create = function()
 	for(var i = 0; i < this.numEllipse; i++)
 	{
 		var e = new Ellipse();
-		var angle = Math.random() * (Math.PI * 2.0);
+		var angle = Math.random() * (Math.PI * 2.0) - Math.PI;
 		// keep trying different locations until we find one that isn't colliding with an existing Ellipse
 		var c = 0;
 		while( c < 10000 &&
