@@ -373,7 +373,7 @@ Ellipse.prototype.drawEllipse = function()
 	ctx.fillStyle = this.parent.colorEllipse;
 	ctx.fill();
 
-	if (Math.min(this.ax, this.by) > 3)
+	if (Math.min(this.ax, this.by) > 3 && this.parent.showAngles)
 	{
 		// draw nose and rear angles if ellipse is not tiny
 		ctx.strokeStyle = "#003f3f";

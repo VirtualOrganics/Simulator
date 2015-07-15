@@ -28,6 +28,7 @@ function ObjManager( docId )
 	this.orderParameter = 0.0001;
 	this.velocity = 0.7;
 	this.forceMultiplier = 1.0;
+	this.showAngles = false;
 	this.nose_angle = 30.0;
 	this.rear_angle = 30.0;
 	this.nose_nose = 45;
@@ -69,6 +70,8 @@ function ObjManager( docId )
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
 	this.minorCtrl.onFinishChange(function(value) { if (!value) _this.minorAxis = 1; _this.restartFlag = true; });
+	var showAng = ellipseFolder.add(this, "showAngles").listen();
+	showAng.onChange(function(value) { Ellipse.shape = null; });
 
 	var collideFolder = gui.addFolder("Angles and Turns");
 	this.noseAngleCtrl = collideFolder.add(this, "nose_angle").min(0).max(180).step(1).listen();
