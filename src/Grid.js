@@ -30,7 +30,7 @@ Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _
 	this.cellWide = _cellWide;
 	this.cellHigh = _cellHigh;
 	this.objWide = _objWide;
-	this._objHigh = _objHigh;
+	this.objHigh = _objHigh;
 
 	this.grid = [];
 	for(var x = 0; x < _wide; x++)
