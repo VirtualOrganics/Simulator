@@ -71,7 +71,7 @@ function ObjManager( docId )
 	this.majorCtrl.onFinishChange(function(value) { if (!value) _this.majorAxis = 1; _this.restartFlag = true; });
 	this.minorCtrl = ellipseFolder.add(this, "minorAxis").min(1).max(30).step(1).listen();
 	this.minorCtrl.onFinishChange(function(value) { if (!value) _this.minorAxis = 1; _this.restartFlag = true; });
-	var piv = ellipseFolder.add(this, "pivot").min(-1.0).max(1.0).step(0.05);
+	var piv = ellipseFolder.add(this, "pivot").min(-5.0).max(5.0).step(0.2);
 	piv.onChange(function(value) { Ellipse.shape = null; });
 	var showAng = ellipseFolder.add(this, "showAngles").listen();
 	showAng.onChange(function(value) { Ellipse.shape = null; });
@@ -116,9 +116,9 @@ function ObjManager( docId )
 
 	var gridFolder = gui.addFolder("Grid");
 	gridFolder.add(this, "showGrid");
-	var gw = gridFolder.add(this, "gridWidth").min(1).max(50).step(1);
+	var gw = gridFolder.add(this, "gridWidth").min(1).max(50).step(1).listen();
 	gw.onFinishChange(function(value) { _this.restartFlag = true; });
-	var gh = gridFolder.add(this, "gridHeight").min(1).max(50).step(1);
+	var gh = gridFolder.add(this, "gridHeight").min(1).max(50).step(1).listen();
 	gh.onFinishChange(function(value) { _this.restartFlag = true; });
 
     // detect mouse click for pause and drag
@@ -178,6 +178,14 @@ ObjManager.prototype.create = function()
 	canvas.height = this.areaHigh;
 
 	var max = Math.max(this.minorAxis, this.majorAxis);
+
+	// grid must be bigger than the ellipses
+	if (this.areaWide / this.gridWidth < 2 * max * 1.2) this.gridWidth = Math.ceil(this.areaWide / (2 * max * 1.2));
+	if (this.areaHigh / this.gridHeight < 2 * max * 1.2) this.gridHeight = Math.ceil(this.areaHigh / (2 * max * 1.2));
+	// if grid is too large it is less effective
+	if (this.areaWide / this.gridWidth > 2 * max * 3.0) this.gridWidth = Math.ceil(this.areaWide / (2 * max * 3.0));
+	if (this.areaHigh / this.gridHeight > 2 * max * 3.0) this.gridHeight = Math.ceil(this.areaHigh / (2 * max * 3.0));
+
 	this.grid = new Grid();
 	// Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _objHigh)
 	this.grid.create(this.gridWidth, this.gridHeight, this.areaWide / this.gridWidth, this.areaHigh / this.gridHeight, max, max);
