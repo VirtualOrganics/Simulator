@@ -100,24 +100,37 @@ Ellipse.prototype.update = function()
 
 	if (this.deflectionSpeed !== 0)
 	{
+		var d = this.deflection;
 		this.deflection += this.deflectionSpeed;
 		while(this.deflection >= Math.PI) this.deflection -= Math.PI * 2.0;
 		while(this.deflection < -Math.PI) this.deflection += Math.PI * 2.0;
+		// if we're colliding, don't deflect
+		collList = this.parent.collide(this, true);
+		if (collList && collList.length > 0)
+			this.deflection = d;
 	}
+
 
 	// turn if we're still turning
 	if (this.turnCount > 0 || this.parent.turnForever)
 	{
+		var a = this.angle;
 		this.angle += this.turnAmount;
 		while(this.angle >= Math.PI) this.angle -= Math.PI * 2.0;
 		while(this.angle < -Math.PI) this.angle += Math.PI * 2.0;
-		this.vx = Math.cos(this.angle) * this.speed;
-		this.vy = Math.sin(this.angle) * this.speed;
 		if (!this.parent.turnForever && --this.turnCount === 0)
 		{
 			this.ignoreContact = null;
 		}
+		// if we're colliding, don't turn
+		collList = this.parent.collide(this, true);
+		if (collList && collList.length > 0)
+			this.angle = a;
+		this.vx = Math.cos(this.angle) * this.speed;
+		this.vy = Math.sin(this.angle) * this.speed;
 	}
+
+
 };
 
 
