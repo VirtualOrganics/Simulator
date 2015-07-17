@@ -26,7 +26,7 @@ function ObjManager( docId )
 
 	this.numEllipse = 800;
 	this.majorAxis = 8;
-	this.minorAxis = 4;
+	this.minorAxis = 3;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.8;
 	this.forceMultiplier = 1.0;
@@ -36,11 +36,11 @@ function ObjManager( docId )
 	this.rear_angle = 30.0;
 	this.nose_nose = 45;
 	this.nose_side = 30;
-	this.nose_rear = 0;
+	this.nose_rear = 30;
 	this.side_nose = 30;
 	this.side_side = 30;
 	this.side_rear = 30;
-	this.rear_nose = 0;
+	this.rear_nose = 30;
 	this.rear_side = 30;
 	this.rear_rear = 30;
 	this.turnSteps = 12;
@@ -245,7 +245,7 @@ ObjManager.prototype.create = function()
 
 	var max = Math.max( this.minorAxis, this.majorAxis );
 
-	var maxPivot = max + this.majorAxis * Math.abs( this.pivot );
+	var maxPivot = max * 2.0 + this.majorAxis * Math.abs( this.pivot );
 	// grid must be bigger than the ellipses
 	if ( this.areaWide / this.gridWidth < maxPivot * 1.2 ) this.gridWidth = Math.ceil( this.areaWide / ( maxPivot * 1.2 ) );
 	if ( this.areaHigh / this.gridHeight < maxPivot * 1.2 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxPivot * 1.2 ) );
@@ -384,7 +384,7 @@ ObjManager.prototype.collide = function( e )
 			if ( d2 <= s2 )
 			{
 				// more accurate system for collision detection
-				if (ellipseEllipseCollide(e.x, e.y, e.ax * 2.0, e.by * 2.0, e.angle, c.x, c.y, c.ax * 2.0, c.by * 2.0, c.angle))
+				if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
 				{
 					var d = Math.sqrt( d2 );
 					var a = Math.atan2( dy, dx );
@@ -581,6 +581,7 @@ var ellipseEllipseCollide = function( x1, y1, w1, h1, theta1, x2, y2, w2, h2, th
 			f: a * a / b + c * c / d - 1
 		};
 	};
+
 	if ( !circleCircleCollide( x1, y1, w1 > h1 ? w1 : h1, x2, y2, w2 > h2 ? w2 : h2 ) )
 	{
 		return false;
@@ -589,6 +590,7 @@ var ellipseEllipseCollide = function( x1, y1, w1, h1, theta1, x2, y2, w2, h2, th
 		sine1 = Math.sin( theta1 ),
 		cosine2 = Math.cos( theta2 ),
 		sine2 = Math.sin( theta2 );
+
 	if ( isInEllipse( x2, y2, x1, y1, w1, h1, cosine1, sine1 ) ||
 			isInEllipse( x1, y1, x2, y2, w2, h2, cosine2, sine2 ) )
 	{
