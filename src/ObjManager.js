@@ -355,63 +355,53 @@ ObjManager.prototype.moveAll = function( _dx, _dy )
 };
 
 
-ObjManager.prototype.collide = function( e )
+ObjManager.prototype.collide = function( e, quickExit )
 {
 	var who = null;
 
 	var list = this.grid.neighbours( e, true );
 	var collList = [];
 
-	var ex = e.x - e.ax * Math.cos( e.angle ) * this.pivot;
-	var ey = e.y - e.ax * Math.sin( e.angle ) * this.pivot;
+	var ex = e.x - e.ax * Math.cos( e.angle + e.deflection ) * this.pivot;
+	var ey = e.y - e.ax * Math.sin( e.angle + e.deflection ) * this.pivot;
 
 	for ( var i = 0, l = list.length; i < l; i++ )
 	{
 		var c = list[ i ];
 		if ( c && c != e )
 		{
-			var cx = c.x - c.ax * Math.cos( c.angle ) * this.pivot;
-			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
+			var cx = c.x - c.ax * Math.cos( c.angle + c.deflection ) * this.pivot;
+			var cy = c.y - c.ax * Math.sin( c.angle + c.deflection ) * this.pivot;
 
-			// circular range check first (quick reject)
-			var dx = cx - ex;
-			var dy = cy - ey;
-			var d2 = dx * dx + dy * dy;
-			var maxe = Math.max( e.ax, e.by );
-			var maxc = Math.max( c.ax, c.by );
-			var s2 = ( maxe + maxc ) * ( maxe + maxc );
-			// do the circles intersect?
-			if ( d2 <= s2 )
+			// more accurate system for collision detection
+			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle + e.deflection, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle + c.deflection))
 			{
-				// more accurate system for collision detection
-				if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
-				{
-					var d = Math.sqrt( d2 );
-					var a = Math.atan2( dy, dx );
-					var r1 = ellipseRadius( e.ax, e.by, e.angle + e.deflection, a - Math.PI );
-					var r2 = ellipseRadius( c.ax, c.by, c.angle + c.deflection, a );
+				var dx = cx - ex;
+				var dy = cy - ey;
+				var d2 = dx * dx + dy * dy;
+				var d = Math.sqrt( d2 );
+				var a = Math.atan2( dy, dx );
+				var r1 = ellipseRadius( e.ax, e.by, e.angle + e.deflection, a - Math.PI );
+				var r2 = ellipseRadius( c.ax, c.by, c.angle + c.deflection, a );
 
-					// do the ellipses actually touch?
-					// (approximation uses distance < radius1 + radius2)
-					// this can give incorrect results because the radius may not pass through the point of contact for ellipse collisions
-					// if ( d <= r1 + r2 )
-					{
-						// store collision partials
-						e.coll = {
-							d: d,
-							a: a,
-							r1: r1,
-							r2: r2
-						};
-						c.coll = {
-							d: d,
-							a: a - Math.PI,
-							r1: r1,
-							r2: r2
-						};
-						collList.push( c );
-					}
-				}
+				// store collision partials
+				// the collision point is approximated as being along the radius joining the two centres
+				e.coll = {
+					d: d,
+					a: a,
+					r1: r1,
+					r2: r2
+				};
+				c.coll = {
+					d: d,
+					a: a - Math.PI,
+					r1: r1,
+					r2: r2
+				};
+				collList.push( c );
+
+				if (quickExit)
+					break;
 			}
 		}
 	}
