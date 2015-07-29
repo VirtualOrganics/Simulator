@@ -438,12 +438,23 @@ function ellipseRadius( ax, by, facing, angle )
 
 ObjManager.prototype.forceAtRange = function(_range)
 {
+	var d;
 	if (_range < this.repel_range)
-		return 1.0 * this.forceMultiplier;
+	{
+		// d = 0 at repel_range, 1.0 at range 0
+		d = (this.repel_range - _range) / this.repel_range;
+		return d * d * this.forceMultiplier;
+	}
 	if (_range < this.neutral_range)
 		return 0.0;
 	if (_range < this.attract_range)
-		return -1.0 * this.forceMultiplier;
+	{
+		// d = 0 at attract_range, 1.0 at neutral_range
+		var r = _range - this.neutral_range;
+		var a = this.attract_range - this.neutral_range;
+		d = (a - r) / a;
+		return -(d * d * this.forceMultiplier);
+	}
 	return 0.0;
 };
 

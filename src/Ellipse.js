@@ -201,10 +201,12 @@ Ellipse.prototype.applyForces = function(c)
 		var pushy = Math.sin(a) * force;
 		this.vx -= pushx;
 		this.vy -= pushy;
+		this.turn();
 		//this.parent.grid.move(this);
 
 		c.vx += pushx;
 		c.vy += pushy;
+		c.turn();
 		//this.parent.grid.move(c);
 	}
 };
@@ -212,7 +214,9 @@ Ellipse.prototype.applyForces = function(c)
 
 Ellipse.prototype.turn = function()
 {
-
+	var a = Math.atan2(this.vy, this.vx);
+	this.vx = Math.cos(a) * this.speed;
+	this.vy = Math.sin(a) * this.speed;
 };
 
 
