@@ -54,13 +54,9 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	if (!Ellipse.shape)
 		Ellipse.shape = this.drawEllipse();
 
-	var collList = this.parent.collide(this);
-	if (!collList || collList.length === 0)
-	{
-		this.parent.grid.add(this);
-		return true;
-	}
-	return false;
+	// TODO: add overlapping checks at creation?
+	this.parent.grid.add(this);
+	return true;
 };
 
 
@@ -74,14 +70,14 @@ Ellipse.prototype.update = function()
 	this.move(this.vx, this.vy);
 
 	// if we're interacting with other particles
-	var collList = this.parent.collide(this, false);
+	var collList = this.parent.interact(this, false);
 	if (collList && collList.length > 0)
 	{
-		// sort collisions to deal with the biggest overlap first (smaller separating 'd' = bigger overlap)
+		// sort collisions to deal with the closest point first ('d' = distance between them)
 		collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
 		// deal with each collision
 		for(var i = 0, l = collList.length; i < l; i++)
-			this.collisionResponse(collList[i]);
+			this.applyForces(collList[i]);
 	}
 
 	if ((frameCount % 7) === 0 && this.parent.showTrail > 0)
@@ -193,21 +189,24 @@ Ellipse.prototype.wrap = function(_object)
 };
 
 
-Ellipse.prototype.collisionResponse = function(c)
+Ellipse.prototype.applyForces = function(c)
 {
 	var a = this.coll.a;
 
 	// apply force to both ellipses
 	var force = this.parent.forceAtRange(this.coll.d);
-	var pushx = Math.cos(a) * force;
-	var pushy = Math.sin(a) * force;
-	this.x -= pushx;
-	this.y -= pushy;
-	this.parent.grid.move(this);
+	if (force !== 0)
+	{
+		var pushx = Math.cos(a) * force;
+		var pushy = Math.sin(a) * force;
+		this.vx -= pushx;
+		this.vy -= pushy;
+		//this.parent.grid.move(this);
 
-	c.x += pushx;
-	c.y += pushy;
-	this.parent.grid.move(c);
+		c.vx += pushx;
+		c.vy += pushy;
+		//this.parent.grid.move(c);
+	}
 };
 
 
