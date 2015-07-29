@@ -55,7 +55,7 @@ Grid.prototype.add = function(_obj, _gx, _gy)
 };
 
 
-Grid.prototype.remove = function(_obj)
+Grid.prototype.remove = function(_obj, _gx, _gy)
 {
 	if (this.grid[_gx] && this.grid[_gx][_gy])
 	{
