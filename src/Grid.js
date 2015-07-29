@@ -44,49 +44,27 @@ Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _
 
 Grid.prototype.add = function(_obj, _gx, _gy)
 {
-	if (_gx === undefined)
-		_gx = Math.floor(_obj.x / this.cellWide);
-	if (_gy === undefined)
-		_gy = Math.floor(_obj.y / this.cellHigh);
-
-	if (_gx >= 0 && _gx < this.wide)
+	if (this.grid[_gx] && this.grid[_gx][_gy])
 	{
-		if (_gy >= 0 && _gy < this.high)
-		{
-			if (this.grid[_gx] && this.grid[_gx][_gy])
-			{
-				this.grid[_gx][_gy].push(_obj);
-				_obj.gridX = _gx;
-				_obj.gridY = _gy;
-				return true;
-			}
-		}
+		this.grid[_gx][_gy].push(_obj);
+		_obj.gridX = _gx;
+		_obj.gridY = _gy;
+		return true;
 	}
 	return false;
 };
 
 
-Grid.prototype.remove = function(_obj, _gx, _gy)
+Grid.prototype.remove = function(_obj)
 {
-	if (_gx === undefined)
-		_gx = Math.floor(_obj.x / this.cellWide);
-	if (_gy === undefined)
-		_gy = Math.floor(_obj.y / this.cellHigh);
-
-	if (_gx >= 0 && _gx < this.wide)
+	if (this.grid[_gx] && this.grid[_gx][_gy])
 	{
-		if (_gy >= 0 && _gy < this.high)
+		var i = this.grid[_gx][_gy].indexOf(_obj);
+		if (i != -1)
 		{
-			if (this.grid[_gx] && this.grid[_gx][_gy])
-			{
-				var i = this.grid[_gx][_gy].indexOf(_obj);
-				if (i != -1)
-				{
-					this.grid[_gx][_gy].splice(i, 1);
-					_obj.gridX = _obj.gridY = undefined;
-					return true;
-				}
-			}
+			this.grid[_gx][_gy].splice(i, 1);
+			_obj.gridX = _obj.gridY = undefined;
+			return true;
 		}
 	}
 	return false;
