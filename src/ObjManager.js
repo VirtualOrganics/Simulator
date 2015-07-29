@@ -24,13 +24,13 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 800;
+	this.numEllipse = 100;
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.8;
 	this.forceMultiplier = 1.0;
-	this.pivot = 0.66;
+	this.pivot = 0.0;
 	this.showTrail = 0;
 	this.areaWide = 400;
 	this.areaHigh = 400;
@@ -38,11 +38,16 @@ function ObjManager( docId )
 	this.boundary = 90;
 	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
-	this.colorEllipse = "#00af38";
+	this.colorEllipse = "#7fff7f";
+
+	this.repel_range = 5.0;
+	this.neutral_range = 6.0;
+	this.attract_range = 15.0;
 
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
 	gui.add( this, "orderParameter", 0.0, 2.0 ).listen();
+
 
 	var ellipseFolder = gui.addFolder( "Ellipses" );
 	this.numCtrl = ellipseFolder.add( this, "numEllipse" ).min( 10 ).max( 5000 ).step( 10 ).listen();
@@ -74,11 +79,13 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
-	var showAng = ellipseFolder.add( this, "showAngles" ).listen();
-	showAng.onChange( function( value )
-	{
-		Ellipse.shape = null;
-	} );
+
+
+	var forceFolder = gui.addFolder( "Forces" );
+	forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
+	forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
+	forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
+
 
 	var grfxFolder = gui.addFolder( "World" );
 	grfxFolder.add( this, "showTrail" ).min( 0 ).max( MAX_TRAIL ).step( 5 );
@@ -111,6 +118,7 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
+
 
 	var gridFolder = gui.addFolder( "Grid" );
 	gridFolder.add( this, "showGrid" );
@@ -191,6 +199,7 @@ ObjManager.prototype.create = function()
 	canvas.height = this.areaHigh;
 
 	var max = Math.max( this.minorAxis, this.majorAxis );
+	max = Math.max(max, this.attract_range);
 
 	var maxPivot = max * 2.0 + this.majorAxis * Math.abs( this.pivot );
 	// grid must be bigger than the ellipses
@@ -360,7 +369,7 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 ObjManager.prototype.collide = function( e, quickExit )
 {
 	if ( this.majorAxis == this.minorAxis )
-		return circleCollide( e );
+		return this.circleCollide( e );
 
 	var who = null;
 
@@ -429,6 +438,18 @@ function ellipseRadius( ax, by, facing, angle )
 	var r = ax * by / Math.sqrt( ax * ax * s * s + by * by * c * c );
 	return r;
 }
+
+
+ObjManager.prototype.forceAtRange = function(_range)
+{
+	if (_range < this.repel_range)
+		return 1.0 * this.forceMultiplier;
+	if (_range < this.neutral_range)
+		return 0.0;
+	if (_range < this.attract_range)
+		return -1.0 * this.forceMultiplier;
+	return 0.0;
+};
 
 
 ObjManager.prototype.draw = function()
