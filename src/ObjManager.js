@@ -25,29 +25,12 @@ function ObjManager( docId )
 	this.gridHeight = 15;
 
 	this.numEllipse = 800;
-	this.majorAxis = 8;
-	this.minorAxis = 3;
+	this.majorAxis = 5;
+	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.8;
 	this.forceMultiplier = 1.0;
 	this.pivot = 0.66;
-	this.showAngles = false;
-	this.nose_angle = 30.0;
-	this.rear_angle = 30.0;
-	this.nose_nose = 45;
-	this.nose_side = 30;
-	this.nose_rear = 30;
-	this.side_nose = 30;
-	this.side_side = 30;
-	this.side_rear = 30;
-	this.rear_nose = 30;
-	this.rear_side = 30;
-	this.rear_rear = 30;
-	this.turnSteps = 12;
-	this.deflectionDir = "2";
-	this.deflectionSpeed = 0.01;
-	this.turnForever = false;
-	this.bounce = false;
 	this.showTrail = 0;
 	this.areaWide = 400;
 	this.areaHigh = 400;
@@ -55,7 +38,7 @@ function ObjManager( docId )
 	this.boundary = 90;
 	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
-	this.colorEllipse = "#00af9a";
+	this.colorEllipse = "#00af38";
 
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
@@ -96,42 +79,6 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
-
-	var collideFolder = gui.addFolder( "Angles and Turns" );
-	this.noseAngleCtrl = collideFolder.add( this, "nose_angle" ).min( 0 ).max( 180 ).step( 1 ).listen();
-	this.noseAngleCtrl.onChange( function( value )
-	{
-		Ellipse.shape = null;
-	} );
-	this.rearAngleCtrl = collideFolder.add( this, "rear_angle" ).min( 0 ).max( 180 ).step( 1 ).listen();
-	this.rearAngleCtrl.onChange( function( value )
-	{
-		Ellipse.shape = null;
-	} );
-
-	collideFolder.add( this, "boundary" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "nose_nose" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "nose_side" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "nose_rear" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "side_nose" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "side_side" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "side_rear" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "rear_nose" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "rear_side" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "rear_rear" ).min( -180 ).max( 180 ).step( 1 );
-	collideFolder.add( this, "turnSteps" ).min( 1 ).max( 60 ).step( 1 );
-	collideFolder.add( this, "deflectionDir",
-	{
-		mirror: 1,
-		match: 2
-	} );
-	var def = collideFolder.add( this, "deflectionSpeed" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
-	def.onFinishChange( function( value )
-	{
-		_this.restartFlag = true;
-	} );
-	collideFolder.add( this, "turnForever" );
-	collideFolder.add( this, "bounce" );
 
 	var grfxFolder = gui.addFolder( "World" );
 	grfxFolder.add( this, "showTrail" ).min( 0 ).max( MAX_TRAIL ).step( 5 );
@@ -355,8 +302,66 @@ ObjManager.prototype.moveAll = function( _dx, _dy )
 };
 
 
+ObjManager.prototype.circleCollide = function( e, quickExit )
+{
+	var who = null;
+
+	var list = this.grid.neighbours( e, true );
+	var collList = [];
+
+	var ex = e.x - e.ax * Math.cos( e.angle + e.deflection ) * this.pivot;
+	var ey = e.y - e.ax * Math.sin( e.angle + e.deflection ) * this.pivot;
+
+	var r2 = this.majorAxis * this.majorAxis;
+
+	for ( var i = 0, l = list.length; i < l; i++ )
+	{
+		var c = list[ i ];
+		if ( c && c != e )
+		{
+			var cx = c.x - c.ax * Math.cos( c.angle + c.deflection ) * this.pivot;
+			var cy = c.y - c.ax * Math.sin( c.angle + c.deflection ) * this.pivot;
+			var dx = cx - ex;
+			var dy = cy - ey;
+			var d2 = dx * dx + dy * dy;
+			// more accurate system for collision detection
+			if (d2 <= r2)
+			{
+				var d = Math.sqrt( d2 );
+				var a = Math.atan2( dy, dx );
+				var r = this.majorAxis;
+
+				// store collision partials
+				// the collision point is approximated as being along the radius joining the two centres
+				e.coll = {
+					d: d,
+					a: a,
+					r1: r,
+					r2: r
+				};
+				c.coll = {
+					d: d,
+					a: a - Math.PI,
+					r1: r,
+					r2: r
+				};
+				collList.push( c );
+
+				if (quickExit)
+					break;
+			}
+		}
+	}
+
+	return collList;
+};
+
+
 ObjManager.prototype.collide = function( e, quickExit )
 {
+	if ( this.majorAxis == this.minorAxis )
+		return circleCollide( e );
+
 	var who = null;
 
 	var list = this.grid.neighbours( e, true );
