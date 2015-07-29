@@ -70,6 +70,7 @@ Ellipse.prototype.update = function()
 	this.move();
 
 	// apply speed damping
+	this.angle = Math.atan2(this.vy, this.vx);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	var newSpeed = this.speed + (this.speed - actualSpeed) * this.parent.speed_damping;
 	this.vx = Math.cos(this.angle) * newSpeed;
@@ -100,11 +101,14 @@ Ellipse.prototype.update = function()
 Ellipse.prototype.move = function()
 {
 	// move at fixed speed
-	var a = this.angle = Math.atan2(this.vy, this.vx);
-	var vx = Math.cos(a) * this.speed;
-	var vy = Math.sin(a) * this.speed;
-	this.x += vx;
-	this.y += vy;
+	// var a = this.angle = Math.atan2(this.vy, this.vx);
+	// var vx = Math.cos(a) * this.speed;
+	// var vy = Math.sin(a) * this.speed;
+	// this.x += vx;
+	// this.y += vy;
+
+	this.x += this.vx;
+	this.y += this.vy;
 
 	// wrap around at world edges
 	this.wrap(this);
