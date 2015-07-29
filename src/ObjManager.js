@@ -82,10 +82,15 @@ function ObjManager( docId )
 
 
 	var forceFolder = gui.addFolder( "Forces" );
-	forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
-	forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
-	forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
-
+	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 15.0 ).step( 0.10 ).listen();
+	rr.onFinishChange( function(value) {
+		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
+	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 20.0 ).step( 0.20 ).listen();
+	nr.onFinishChange( function(value) {
+		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
+	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
+	ar.onFinishChange( function(value) {
+		if (value < _this.neutral_range ) _this.neutral_range = value; if (value < _this.repel_range ) _this.repel_range = value; });
 
 	var grfxFolder = gui.addFolder( "World" );
 	grfxFolder.add( this, "showTrail" ).min( 0 ).max( MAX_TRAIL ).step( 5 );
@@ -321,7 +326,7 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 	var ex = e.x - e.ax * Math.cos( e.angle + e.deflection ) * this.pivot;
 	var ey = e.y - e.ax * Math.sin( e.angle + e.deflection ) * this.pivot;
 
-	var r2 = this.majorAxis * this.majorAxis;
+	var r2 = this.attract_range * this.attract_range;
 
 	for ( var i = 0, l = list.length; i < l; i++ )
 	{
@@ -338,21 +343,16 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 			{
 				var d = Math.sqrt( d2 );
 				var a = Math.atan2( dy, dx );
-				var r = this.majorAxis;
 
 				// store collision partials
 				// the collision point is approximated as being along the radius joining the two centres
 				e.coll = {
 					d: d,
-					a: a,
-					r1: r,
-					r2: r
+					a: a
 				};
 				c.coll = {
 					d: d,
-					a: a - Math.PI,
-					r1: r,
-					r2: r
+					a: a - Math.PI
 				};
 				collList.push( c );
 
@@ -366,7 +366,7 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 };
 
 
-ObjManager.prototype.collide = function( e, quickExit )
+ObjManager.prototype.interact = function( e, quickExit )
 {
 	if ( this.majorAxis == this.minorAxis )
 		return this.circleCollide( e );
@@ -395,22 +395,18 @@ ObjManager.prototype.collide = function( e, quickExit )
 				var d2 = dx * dx + dy * dy;
 				var d = Math.sqrt( d2 );
 				var a = Math.atan2( dy, dx );
-				var r1 = ellipseRadius( e.ax, e.by, e.angle + e.deflection, a - Math.PI );
-				var r2 = ellipseRadius( c.ax, c.by, c.angle + c.deflection, a );
+				//var r1 = ellipseRadius( e.ax, e.by, e.angle + e.deflection, a - Math.PI );
+				//var r2 = ellipseRadius( c.ax, c.by, c.angle + c.deflection, a );
 
 				// store collision partials
 				// the collision point is approximated as being along the radius joining the two centres
 				e.coll = {
 					d: d,
-					a: a,
-					r1: r1,
-					r2: r2
+					a: a
 				};
 				c.coll = {
 					d: d,
-					a: a - Math.PI,
-					r1: r1,
-					r2: r2
+					a: a - Math.PI
 				};
 				collList.push( c );
 
