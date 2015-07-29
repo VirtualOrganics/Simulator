@@ -80,7 +80,7 @@ Ellipse.prototype.update = function()
 	if (collList && collList.length > 0)
 	{
 		// sort collisions to deal with the closest point first ('d' = distance between them)
-		collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
+		//collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
 		// deal with each collision
 		for(var i = 0, l = collList.length; i < l; i++)
 			this.applyForces(collList[i]);
@@ -195,25 +195,18 @@ Ellipse.prototype.applyForces = function(c)
 {
 	var a = this.coll.a;
 
-	// apply force to both ellipses
-	var force = this.parent.forceAtRange(this.coll.d);
+	// apply half of the total force to each of the two ellipses
+	var force = this.parent.forceAtRange(this.coll.d) * 0.5;
 	if (force !== 0)
 	{
 		var pushx = Math.cos(a) * force;
 		var pushy = Math.sin(a) * force;
 		this.vx -= pushx;
 		this.vy -= pushy;
-		//this.parent.grid.move(this);
 
 		c.vx += pushx;
 		c.vy += pushy;
-		//this.parent.grid.move(c);
 	}
-};
-
-
-Ellipse.prototype.turn = function()
-{
 };
 
 
