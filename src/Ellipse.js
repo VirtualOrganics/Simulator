@@ -67,7 +67,13 @@ Ellipse.prototype.update = function()
 		Ellipse.shape = this.drawEllipse();
 
 	// move and update grid and trail
-	this.move(this.vx, this.vy);
+	this.move();
+
+	// apply speed damping
+	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+	var newSpeed = this.speed + (this.speed - actualSpeed) * this.parent.speed_damping;
+	this.vx = Math.cos(this.angle) * newSpeed;
+	this.vy = Math.sin(this.angle) * newSpeed;
 
 	// if we're interacting with other particles
 	var collList = this.parent.interact(this, false);
@@ -91,23 +97,19 @@ Ellipse.prototype.update = function()
 };
 
 
-Ellipse.prototype.move = function(vx, vy, moveTrail)
+Ellipse.prototype.move = function()
 {
+	// move at fixed speed
+	var a = this.angle = Math.atan2(this.vy, this.vx);
+	var vx = Math.cos(a) * this.speed;
+	var vy = Math.sin(a) * this.speed;
 	this.x += vx;
 	this.y += vy;
 
+	// wrap around at world edges
 	this.wrap(this);
 
-	if (moveTrail)
-	{
-		for(var i = this.trail.length - 1; i >= 0; --i)
-		{
-			this.trail[i].x += vx;
-			this.trail[i].y += vy;
-			this.wrap(this.trail[i]);
-		}
-	}
-
+	// update grid location
 	this.parent.grid.move(this);
 };
 
@@ -201,12 +203,10 @@ Ellipse.prototype.applyForces = function(c)
 		var pushy = Math.sin(a) * force;
 		this.vx -= pushx;
 		this.vy -= pushy;
-		this.turn();
 		//this.parent.grid.move(this);
 
 		c.vx += pushx;
 		c.vy += pushy;
-		c.turn();
 		//this.parent.grid.move(c);
 	}
 };
@@ -214,9 +214,6 @@ Ellipse.prototype.applyForces = function(c)
 
 Ellipse.prototype.turn = function()
 {
-	var a = Math.atan2(this.vy, this.vx);
-	this.vx = Math.cos(a) * this.speed;
-	this.vy = Math.sin(a) * this.speed;
 };
 
 

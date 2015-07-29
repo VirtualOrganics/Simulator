@@ -29,6 +29,7 @@ function ObjManager( docId )
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.8;
+	this.speed_damping = 0.95;
 	this.forceMultiplier = 1.0;
 	this.pivot = 0.0;
 	this.showTrail = 0;
@@ -40,9 +41,11 @@ function ObjManager( docId )
 	this.colorTrail = "#898989";
 	this.colorEllipse = "#7fff7f";
 
-	this.repel_range = 5.0;
-	this.neutral_range = 6.0;
-	this.attract_range = 15.0;
+	this.repel_range = 8.0;
+	this.repel_force = 5.0;
+	this.neutral_range = 9.0;
+	this.attract_range = 30.0;
+	this.attract_force = 1.0;
 
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
@@ -56,11 +59,12 @@ function ObjManager( docId )
 		if ( !value ) _this.numEllipse = 1;
 		_this.restartFlag = true;
 	} );
-	this.velCtrl = ellipseFolder.add( this, "velocity" ).min( 0.1 ).max( 2.0 ).step( 0.01 ).listen();
+	this.velCtrl = ellipseFolder.add( this, "velocity" ).min( 0.1 ).max( 4.0 ).step( 0.01 ).listen();
 	this.velCtrl.onFinishChange( function( value )
 	{
 		_this.restartFlag = true;
 	} );
+	ellipseFolder.add( this, "speed_damping" ).min( 0.0 ).max( 4.0 ).step( 0.01 );
 	ellipseFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
 	this.majorCtrl = ellipseFolder.add( this, "majorAxis" ).min( 1 ).max( 30 ).step( 1 ).listen();
 	this.majorCtrl.onFinishChange( function( value )
@@ -82,12 +86,14 @@ function ObjManager( docId )
 
 
 	var forceFolder = gui.addFolder( "Forces" );
+	forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
 	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 15.0 ).step( 0.10 ).listen();
 	rr.onFinishChange( function(value) {
 		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
 	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 20.0 ).step( 0.20 ).listen();
 	nr.onFinishChange( function(value) {
 		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
+	forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
 	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
 	ar.onFinishChange( function(value) {
 		if (value < _this.neutral_range ) _this.neutral_range = value; if (value < _this.repel_range ) _this.repel_range = value; });
@@ -442,7 +448,7 @@ ObjManager.prototype.forceAtRange = function(_range)
 	if (_range < this.repel_range)
 	{
 		// d = 0 at repel_range, 1.0 at range 0
-		d = (this.repel_range - _range) / this.repel_range;
+		d = this.repel_force * (this.repel_range - _range) / this.repel_range;
 		return d * d * this.forceMultiplier;
 	}
 	if (_range < this.neutral_range)
@@ -452,7 +458,7 @@ ObjManager.prototype.forceAtRange = function(_range)
 		// d = 0 at attract_range, 1.0 at neutral_range
 		var r = _range - this.neutral_range;
 		var a = this.attract_range - this.neutral_range;
-		d = (a - r) / a;
+		d = this.attract_force * (a - r) / a;
 		return -(d * d * this.forceMultiplier);
 	}
 	return 0.0;
