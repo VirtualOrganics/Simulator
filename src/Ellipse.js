@@ -72,7 +72,7 @@ Ellipse.prototype.update = function()
 	// apply speed damping
 	this.angle = Math.atan2(this.vy, this.vx);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-	var newSpeed = this.speed + (this.speed - actualSpeed) * this.parent.speed_damping;
+	var newSpeed = actualSpeed * this.parent.speed_damping;
 	this.vx = Math.cos(this.angle) * newSpeed;
 	this.vy = Math.sin(this.angle) * newSpeed;
 

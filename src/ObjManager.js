@@ -29,7 +29,7 @@ function ObjManager( docId )
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
 	this.velocity = 0.8;
-	this.speed_damping = 0.95;
+	this.speed_damping = 0.96;
 	this.forceMultiplier = 1.0;
 	this.pivot = 0.0;
 	this.showTrail = 0;
@@ -64,7 +64,7 @@ function ObjManager( docId )
 	{
 		_this.restartFlag = true;
 	} );
-	ellipseFolder.add( this, "speed_damping" ).min( 0.0 ).max( 4.0 ).step( 0.01 );
+	ellipseFolder.add( this, "speed_damping" ).min( 0.80 ).max( 1.00 ).step( 0.01 );
 	ellipseFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
 	this.majorCtrl = ellipseFolder.add( this, "majorAxis" ).min( 1 ).max( 30 ).step( 1 ).listen();
 	this.majorCtrl.onFinishChange( function( value )
