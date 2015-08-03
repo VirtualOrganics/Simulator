@@ -106,13 +106,6 @@ Ellipse.prototype.update = function()
 
 Ellipse.prototype.move = function()
 {
-	// move at fixed speed
-	// var a = this.angle = Math.atan2(this.vy, this.vx);
-	// var vx = Math.cos(a) * this.speed;
-	// var vy = Math.sin(a) * this.speed;
-	// this.x += vx;
-	// this.y += vy;
-
 	this.x += this.vx;
 	this.y += this.vy;
 

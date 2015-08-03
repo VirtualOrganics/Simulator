@@ -24,14 +24,12 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 100;
+	this.numEllipse = 350;
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
 	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
-	this.speed_damping = 960;
-	this.forceMultiplier = 1.0;
 	this.pivot = 0.0;
 	this.showTrail = 0;
 	this.areaWide = 400;
@@ -42,11 +40,12 @@ function ObjManager( docId )
 	this.colorTrail = "#898989";
 	this.colorEllipse = "#7fff7f";
 
-	this.repel_range = 8.0;
-	this.repel_force = 5.0;
-	this.neutral_range = 9.0;
+	this.speed_damping = 980;
+	this.forceMultiplier = 0.8;
+	this.repel_range = 17.0;
+	this.repel_force = 1.5;
 	this.attract_range = 30.0;
-	this.attract_force = 1.0;
+	this.attract_force = 0.7;
 
 	this.grapher = new Grapher();
 
@@ -88,29 +87,24 @@ function ObjManager( docId )
 
 	var forceFolder = gui.addFolder( "Forces" );
 	forceFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
-	forceFolder.add( this, "speed_damping" ).min( 900 ).max( 1000 );
+	forceFolder.add( this, "speed_damping" ).min( 800 ).max( 1000 ).step(2);
 	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 ).listen();
 	rf.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 25.0 ).step( 0.10 ).listen();
 	rr.onFinishChange( function(value) {
-		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
-	});
-	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 30.0 ).step( 0.20 ).listen();
-	nr.onFinishChange( function(value) {
-		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+		if (value > _this.attract_range ) _this.attract_range = value;
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
 	af.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
 	ar.onFinishChange( function(value) {
-		if (value < _this.neutral_range ) _this.neutral_range = value; if (value < _this.repel_range ) _this.repel_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+		if (value < _this.repel_range ) _this.repel_range = value;
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
 	});
 
 	var grfxFolder = gui.addFolder( "World" );
@@ -267,7 +261,7 @@ ObjManager.prototype.create = function()
 	this.numEllipse = this.list.length;
 
 	// draw graph of current attract/repel forces
-	this.grapher.create(this.forceAtRange, this, 0, 50, 1);
+	this.grapher.create(this.forceAtRange, this, 0, 50, 1, Math.max(this.minorAxis, this.majorAxis));
 };
 
 
@@ -466,24 +460,36 @@ function ellipseRadius( ax, by, facing, angle )
 
 ObjManager.prototype.forceAtRange = function(_range)
 {
+	var f = 0;
+
 	var d;
 	if (_range < this.repel_range)
 	{
-		// d = 0 at repel_range, 1.0 at range 0
-		d = this.repel_force * (this.repel_range - _range) / this.repel_range;
-		return d * d * this.forceMultiplier;
+		if (this.repel_range !== 0)
+		{
+			// d = 0 at repel_range, 1.0 at range 0
+			d = this.repel_force * (this.repel_range - _range) / this.repel_range;
+			f += d * d * this.forceMultiplier;
+		}
+		else
+		{
+			f += this.forceMultiplier;
+		}
 	}
-	if (_range < this.neutral_range)
-		return 0.0;
 	if (_range < this.attract_range)
 	{
-		// d = 0 at attract_range, 1.0 at neutral_range
-		var r = _range - this.neutral_range;
-		var a = this.attract_range - this.neutral_range;
-		d = this.attract_force * (a - r) / a;
-		return -(d * d * this.forceMultiplier);
+		// d = 0 at attract_range, 1.0 at range 0
+		if (this.attract_range !== 0)
+		{
+			d = this.attract_force * (this.attract_range - _range) / this.attract_range;
+			f += -(d * d * this.forceMultiplier);
+		}
+		else
+		{
+			f += this.forceMultiplier;
+		}
 	}
-	return 0.0;
+	return f;
 };
 
 

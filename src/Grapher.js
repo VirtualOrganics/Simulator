@@ -10,7 +10,7 @@ function Grapher()
 Grapher.prototype.constructor = Grapher;
 
 
-Grapher.prototype.create = function(_fnc, _context, _start, _end, _step)
+Grapher.prototype.create = function(_fnc, _context, _start, _end, _step, _radius)
 {
 	this.fnc = _fnc;
 	this.fncContext = _context;
@@ -20,9 +20,8 @@ Grapher.prototype.create = function(_fnc, _context, _start, _end, _step)
 	this.div.id = 'canvasDiv';
 	document.body.appendChild(this.div);
 
-	this.makeCanvas(200, 100);
+	this.makeCanvas(300, 200);
 
-	this.ctxSrc.strokeStyle = "#ffffff";
 
 	var i, v;
 	var min = Number.POSITIVE_INFINITY;
@@ -40,13 +39,29 @@ Grapher.prototype.create = function(_fnc, _context, _start, _end, _step)
 	var scaleX = this.canvasSrc.width / (_end - _start);
 	var scaleY = this.canvasSrc.height / (max - min);
 	var zeroY = Math.abs(min) * scaleY;
+
+	// draw radius line
+	this.ctxSrc.strokeStyle = "#000000";
+	this.ctxSrc.beginPath();
+	this.ctxSrc.moveTo(_radius * 2.0 * scaleX, 0);
+	this.ctxSrc.lineTo(_radius * 2.0 * scaleX, this.canvasSrc.height);
+	this.ctxSrc.stroke();
+
+	// draw zero line
+	this.ctxSrc.beginPath();
+	this.ctxSrc.moveTo(0, zeroY);
+	this.ctxSrc.lineTo(this.canvasSrc.width, zeroY);
+	this.ctxSrc.stroke();
+
+	this.ctxSrc.beginPath();
+	this.ctxSrc.strokeStyle = "#ffffff";
 	for(i = _start; i < _end; i += _step)
 	{
 		v = this.fnc.call(this.fncContext, i);
 		this.ctxSrc.moveTo(i * scaleX, zeroY);
 		this.ctxSrc.lineTo(i * scaleX, zeroY + v * scaleY);
-		this.ctxSrc.stroke();
 	}
+	this.ctxSrc.stroke();
 };
 
 
