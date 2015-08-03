@@ -72,7 +72,7 @@ Ellipse.prototype.update = function()
 	// apply speed damping
 	this.angle = Math.atan2(this.vy, this.vx);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-	var newSpeed = actualSpeed * this.parent.speed_damping;
+	var newSpeed = actualSpeed * (this.parent.speed_damping * 0.001);
 	this.vx = Math.cos(this.angle) * newSpeed;
 	this.vy = Math.sin(this.angle) * newSpeed;
 
@@ -84,7 +84,7 @@ Ellipse.prototype.update = function()
 		//collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
 		// deal with each collision
 		for(var i = 0, l = collList.length; i < l; i++)
-			this.applyForces(collList[i]);
+			this.applyForces(collList[i].coll);
 	}
 
 	if ((frameCount % 7) === 0 && this.parent.showTrail > 0)
@@ -197,10 +197,10 @@ Ellipse.prototype.wrap = function(_object)
 
 Ellipse.prototype.applyForces = function(c)
 {
-	var a = this.coll.a;
+	var a = c.a;
 
 	// apply half of the total force to each of the two ellipses
-	var force = this.parent.forceAtRange(this.coll.d) * 0.5;
+	var force = this.parent.forceAtRange(c.d) * 0.5;
 	if (force !== 0)
 	{
 		var pushx = Math.cos(a) * force;

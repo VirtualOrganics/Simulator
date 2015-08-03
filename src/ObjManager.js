@@ -28,8 +28,8 @@ function ObjManager( docId )
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
-	this.velocity = 0.8;
-	this.speed_damping = 0.96;
+	this.velocity = 1.0;
+	this.speed_damping = 960;
 	this.forceMultiplier = 1.0;
 	this.pivot = 0.0;
 	this.showTrail = 0;
@@ -59,12 +59,12 @@ function ObjManager( docId )
 		if ( !value ) _this.numEllipse = 1;
 		_this.restartFlag = true;
 	} );
-	this.velCtrl = ellipseFolder.add( this, "velocity" ).min( 0.1 ).max( 4.0 ).step( 0.01 ).listen();
-	this.velCtrl.onFinishChange( function( value )
-	{
-		_this.restartFlag = true;
-	} );
-	ellipseFolder.add( this, "speed_damping" ).min( 0.80 ).max( 1.00 ).step( 0.01 );
+	// this.velCtrl = ellipseFolder.add( this, "velocity" ).min( 0.1 ).max( 4.0 ).step( 0.01 ).listen();
+	// this.velCtrl.onFinishChange( function( value )
+	// {
+	// 	_this.restartFlag = true;
+	// } );
+	ellipseFolder.add( this, "speed_damping" ).min( 900 ).max( 1000 );
 	ellipseFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
 	this.majorCtrl = ellipseFolder.add( this, "majorAxis" ).min( 1 ).max( 30 ).step( 1 ).listen();
 	this.majorCtrl.onFinishChange( function( value )
@@ -87,10 +87,10 @@ function ObjManager( docId )
 
 	var forceFolder = gui.addFolder( "Forces" );
 	forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
-	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 15.0 ).step( 0.10 ).listen();
+	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 25.0 ).step( 0.10 ).listen();
 	rr.onFinishChange( function(value) {
 		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
-	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 20.0 ).step( 0.20 ).listen();
+	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 30.0 ).step( 0.20 ).listen();
 	nr.onFinishChange( function(value) {
 		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
 	forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
@@ -344,22 +344,17 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 			var dx = cx - ex;
 			var dy = cy - ey;
 			var d2 = dx * dx + dy * dy;
-			// more accurate system for collision detection
 			if (d2 <= r2)
 			{
 				var d = Math.sqrt( d2 );
 				var a = Math.atan2( dy, dx );
 
-				// store collision partials
-				// the collision point is approximated as being along the radius joining the two centres
-				e.coll = {
+				// store collision information on the collided particles
+				c.coll = {
 					d: d,
 					a: a
 				};
-				c.coll = {
-					d: d,
-					a: a - Math.PI
-				};
+				// store all collisions in the collList
 				collList.push( c );
 
 				if (quickExit)
