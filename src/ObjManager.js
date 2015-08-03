@@ -24,7 +24,7 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 350;
+	this.numEllipse = 450;
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
@@ -40,12 +40,12 @@ function ObjManager( docId )
 	this.colorTrail = "#898989";
 	this.colorEllipse = "#7fff7f";
 
-	this.speed_damping = 980;
+	this.speed_damping = 924;
 	this.forceMultiplier = 0.8;
+	this.repel_force = 2.4;
 	this.repel_range = 17.0;
-	this.repel_force = 1.5;
-	this.attract_range = 30.0;
 	this.attract_force = 0.7;
+	this.attract_range = 40.0;
 
 	this.grapher = new Grapher();
 
