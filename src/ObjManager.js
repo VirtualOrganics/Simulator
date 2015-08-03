@@ -28,6 +28,7 @@ function ObjManager( docId )
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
+	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
 	this.speed_damping = 960;
 	this.forceMultiplier = 1.0;
@@ -47,10 +48,12 @@ function ObjManager( docId )
 	this.attract_range = 30.0;
 	this.attract_force = 1.0;
 
+	this.grapher = new Grapher();
+
 	// dat.GUI controlled variables and callbacks
 	var _this = this;
 	gui.add( this, "orderParameter", 0.0, 2.0 ).listen();
-
+	gui.add( this, "kineticEnergy" ).listen();
 
 	var ellipseFolder = gui.addFolder( "Ellipses" );
 	this.numCtrl = ellipseFolder.add( this, "numEllipse" ).min( 10 ).max( 5000 ).step( 10 ).listen();
@@ -64,8 +67,6 @@ function ObjManager( docId )
 	// {
 	// 	_this.restartFlag = true;
 	// } );
-	ellipseFolder.add( this, "speed_damping" ).min( 900 ).max( 1000 );
-	ellipseFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
 	this.majorCtrl = ellipseFolder.add( this, "majorAxis" ).min( 1 ).max( 30 ).step( 1 ).listen();
 	this.majorCtrl.onFinishChange( function( value )
 	{
@@ -86,17 +87,31 @@ function ObjManager( docId )
 
 
 	var forceFolder = gui.addFolder( "Forces" );
-	forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
+	forceFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
+	forceFolder.add( this, "speed_damping" ).min( 900 ).max( 1000 );
+	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 ).listen();
+	rf.onFinishChange( function(value) {
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+	});
 	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 25.0 ).step( 0.10 ).listen();
 	rr.onFinishChange( function(value) {
-		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
+		if (value > _this.neutral_range ) _this.neutral_range = value; if (value > _this.attract_range ) _this.attract_range = value;
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+	});
 	var nr = forceFolder.add( this, "neutral_range" ).min( 0.0 ).max( 30.0 ).step( 0.20 ).listen();
 	nr.onFinishChange( function(value) {
-		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value; });
-	forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
+		if (value < _this.repel_range ) _this.repel_range = value; if (value > _this.attract_range ) _this.attract_range = value;
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+	});
+	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
+	af.onFinishChange( function(value) {
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+	});
 	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
 	ar.onFinishChange( function(value) {
-		if (value < _this.neutral_range ) _this.neutral_range = value; if (value < _this.repel_range ) _this.repel_range = value; });
+		if (value < _this.neutral_range ) _this.neutral_range = value; if (value < _this.repel_range ) _this.repel_range = value;
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1);
+	});
 
 	var grfxFolder = gui.addFolder( "World" );
 	grfxFolder.add( this, "showTrail" ).min( 0 ).max( MAX_TRAIL ).step( 5 );
@@ -143,6 +158,7 @@ function ObjManager( docId )
 	{
 		_this.restartFlag = true;
 	} );
+
 
 	// detect mouse click for pause and drag
 	document.body.onmousedown = function( e )
@@ -249,6 +265,9 @@ ObjManager.prototype.create = function()
 
 	console.log( "Created objects: ", this.list.length );
 	this.numEllipse = this.list.length;
+
+	// draw graph of current attract/repel forces
+	this.grapher.create(this.forceAtRange, this, 0, 50, 1);
 };
 
 
@@ -290,6 +309,10 @@ ObjManager.prototype.update = function()
 		y: 0
 	};
 	var sumC = 0;
+	var totV = {
+		x: 0,
+		y: 0
+	};
 
 	for ( var i = 0, l = this.list.length; i < l; i++ )
 	{
@@ -299,6 +322,8 @@ ObjManager.prototype.update = function()
 			e.update();
 			sumV.x += e.vx;
 			sumV.y += e.vy;
+			totV.x += Math.abs(e.vx);
+			totV.y += Math.abs(e.vy);
 			sumC++;
 		}
 	}
@@ -306,6 +331,8 @@ ObjManager.prototype.update = function()
 
 	// calculate average normalised velocity for all objects
 	this.orderParameter = Math.sqrt( sumV.x * sumV.x + sumV.y * sumV.y ) / sumC;
+	// calculate average kinetic energy per object
+	this.kineticEnergy = Math.sqrt( totV.x * totV.x + totV.y * totV.y ) / sumC;
 };
 
 
