@@ -80,11 +80,17 @@ Ellipse.prototype.update = function()
 	var collList = this.parent.interact(this, false);
 	if (collList && collList.length > 0)
 	{
+		var i, l;
+
+		// push the particles apart to prevent overlapping forces
 		// sort collisions to deal with the closest point first ('d' = distance between them)
-		//collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
+		collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
+		for(i = 0, l = collList.length; i < l; i++)
+			this.collisionResponse(collList[i]);
+
 		// deal with each collision
-		for(var i = 0, l = collList.length; i < l; i++)
-			this.applyForces(collList[i].coll);
+		for(i = 0, l = collList.length; i < l; i++)
+			this.applyForces(collList[i]);
 	}
 
 	if ((frameCount % 7) === 0 && this.parent.showTrail > 0)
@@ -195,12 +201,38 @@ Ellipse.prototype.wrap = function(_object)
 };
 
 
+Ellipse.prototype.collisionResponse = function(c)
+{
+	var overlap = this.ax + c.ax - c.coll.d;
+	if (overlap > 0)
+	{
+		var a = c.coll.a;
+
+		// push the collision apart
+		var pushx = Math.cos(a) * overlap;
+		var pushy = Math.sin(a) * overlap;
+		this.x -= pushx;
+		this.y -= pushy;
+		this.parent.grid.move(this);
+
+		c.x += pushx;
+		c.y += pushy;
+		this.parent.grid.move(c);
+
+		// recalculate the separation distance after the separating move
+		var dx = this.x - c.x;
+		var dy = this.y - c.y;
+		c.coll.d = Math.sqrt(dx * dx + dy * dy);
+	}
+};
+
+
 Ellipse.prototype.applyForces = function(c)
 {
-	var a = c.a;
+	var a = c.coll.a;
 
 	// apply half of the total force to each of the two ellipses
-	var force = this.parent.forceAtRange(c.d) * 0.5;
+	var force = this.parent.forceAtRange(c.coll.d) * 0.5;
 	if (force !== 0)
 	{
 		var pushx = Math.cos(a) * force;
