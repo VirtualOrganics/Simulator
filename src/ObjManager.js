@@ -41,6 +41,7 @@ function ObjManager( docId )
 	this.colorEllipse = "#7fff7f";
 
 	this.forceMultiplier = 1.0;
+	this.push_distance = 1.0;
 	this.damping = 0;
 	this.speed_damping = 1000 - this.damping;
 	this.damping_maximum = 3.0;
@@ -85,7 +86,7 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
-
+	ellipseFolder. add( this, "push_distance" ).min(0.0).max(5.0).step(0.1);
 
 	var forceFolder = gui.addFolder( "Forces" );
 	forceFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
@@ -356,8 +357,8 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 	var list = this.grid.neighbours( e, true );
 	var collList = [];
 
-	var ex = e.x - e.ax * Math.cos( e.angle + e.deflection ) * this.pivot;
-	var ey = e.y - e.ax * Math.sin( e.angle + e.deflection ) * this.pivot;
+	var ex = e.x - e.ax * Math.cos( e.angle ) * this.pivot;
+	var ey = e.y - e.ax * Math.sin( e.angle ) * this.pivot;
 
 	var r2 = this.attract_range * this.attract_range;
 
@@ -366,8 +367,8 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 		var c = list[ i ];
 		if ( c && c != e )
 		{
-			var cx = c.x - c.ax * Math.cos( c.angle + c.deflection ) * this.pivot;
-			var cy = c.y - c.ax * Math.sin( c.angle + c.deflection ) * this.pivot;
+			var cx = c.x - c.ax * Math.cos( c.angle ) * this.pivot;
+			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
 			var dx = cx - ex;
 			var dy = cy - ey;
 			var d2 = dx * dx + dy * dy;
@@ -404,27 +405,27 @@ ObjManager.prototype.interact = function( e, quickExit )
 	var list = this.grid.neighbours( e, true );
 	var collList = [];
 
-	var ex = e.x - e.ax * Math.cos( e.angle + e.deflection ) * this.pivot;
-	var ey = e.y - e.ax * Math.sin( e.angle + e.deflection ) * this.pivot;
+	var ex = e.x - e.ax * Math.cos( e.angle ) * this.pivot;
+	var ey = e.y - e.ax * Math.sin( e.angle ) * this.pivot;
 
 	for ( var i = 0, l = list.length; i < l; i++ )
 	{
 		var c = list[ i ];
 		if ( c && c != e )
 		{
-			var cx = c.x - c.ax * Math.cos( c.angle + c.deflection ) * this.pivot;
-			var cy = c.y - c.ax * Math.sin( c.angle + c.deflection ) * this.pivot;
+			var cx = c.x - c.ax * Math.cos( c.angle ) * this.pivot;
+			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
 
 			// more accurate system for collision detection
-			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle + e.deflection, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle + c.deflection))
+			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
 			{
 				var dx = cx - ex;
 				var dy = cy - ey;
 				var d2 = dx * dx + dy * dy;
 				var d = Math.sqrt( d2 );
 				var a = Math.atan2( dy, dx );
-				//var r1 = ellipseRadius( e.ax, e.by, e.angle + e.deflection, a - Math.PI );
-				//var r2 = ellipseRadius( c.ax, c.by, c.angle + c.deflection, a );
+				//var r1 = ellipseRadius( e.ax, e.by, e.angle, a - Math.PI );
+				//var r2 = ellipseRadius( c.ax, c.by, c.angle, a );
 
 				// store collision partials
 				// the collision point is approximated as being along the radius joining the two centres

@@ -171,20 +171,21 @@ Ellipse.prototype.wrap = function(_object)
 
 Ellipse.prototype.collisionResponse = function(c)
 {
-	var overlap = this.ax + c.ax - c.coll.d;
-	if (overlap > 0)
+	var circles = this.ax + c.ax - c.coll.d;
+	if (circles > 0)
 	{
 		var a = c.coll.a;
 
 		// push the collision apart
-		var pushx = Math.cos(a) * overlap;
-		var pushy = Math.sin(a) * overlap;
-		this.x -= pushx;
-		this.y -= pushy;
+		var force = this.parent.push_distance;
+		var pushx = Math.cos(a) * force;
+		var pushy = Math.sin(a) * force;
+		this.x += pushx;
+		this.y += pushy;
 		this.parent.grid.move(this);
 
-		c.x += pushx;
-		c.y += pushy;
+		c.x -= pushx;
+		c.y -= pushy;
 		this.parent.grid.move(c);
 
 		// recalculate the separation distance after the separating move
