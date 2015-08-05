@@ -24,7 +24,7 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 150;
+	this.numEllipse = 70;
 	this.majorAxis = 7;
 	this.minorAxis = 3;
 	this.maxAxis = Math.max(this.majorAxis, this.minorAxis);
@@ -33,6 +33,17 @@ function ObjManager( docId )
 	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
 	this.pivot = 0.0;
+	this.push_distance = 1.0;
+
+	this.forceMultiplier = 0.1;
+	this.damping = 35;
+	this.speed_damping = 1000 - this.damping;
+	this.damping_maximum = 8.0;
+	this.repel_force = 1.0;
+	this.repel_range = 2.0;
+	this.attract_force = 0.4;
+	this.attract_range = 4.0;
+
 	this.showTrail = 0;
 	this.areaWide = 400;
 	this.areaHigh = 400;
@@ -41,16 +52,6 @@ function ObjManager( docId )
 	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
 	this.colorEllipse = "#7fff7f";
-
-	this.forceMultiplier = 1.0;
-	this.push_distance = 1.0;
-	this.damping = 20;
-	this.speed_damping = 1000 - this.damping;
-	this.damping_maximum = 6.0;
-	this.repel_force = 1.0;
-	this.repel_range = 2.0;
-	this.attract_force = 0.9;
-	this.attract_range = 4.0;
 
 	this.grapher = new Grapher();
 
@@ -232,17 +233,17 @@ ObjManager.prototype.create = function()
 	canvas.width = this.areaWide;
 	canvas.height = this.areaHigh;
 
-	var maxPivot = this.maxAxis * 2.0 + this.maxAxis * Math.abs( this.pivot );
+	var maxRange = this.maxAxis * 2.0 * this.attract_range;
 	// grid must be bigger than the ellipses
-	if ( this.areaWide / this.gridWidth < maxPivot * 1.2 ) this.gridWidth = Math.ceil( this.areaWide / ( maxPivot * 1.2 ) );
-	if ( this.areaHigh / this.gridHeight < maxPivot * 1.2 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxPivot * 1.2 ) );
+	if ( this.areaWide / this.gridWidth < maxRange * 1.2 ) this.gridWidth = Math.ceil( this.areaWide / ( maxRange * 1.2 ) );
+	if ( this.areaHigh / this.gridHeight < maxRange * 1.2 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxRange * 1.2 ) );
 	// if grid is too large it is less effective
-	if ( this.areaWide / this.gridWidth > maxPivot * 4.0 ) this.gridWidth = Math.ceil( this.areaWide / ( maxPivot * 4.0 ) );
-	if ( this.areaHigh / this.gridHeight > maxPivot * 4.0 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxPivot * 4.0 ) );
+	if ( this.areaWide / this.gridWidth > maxRange * 4.0 ) this.gridWidth = Math.ceil( this.areaWide / ( maxRange * 4.0 ) );
+	if ( this.areaHigh / this.gridHeight > maxRange * 4.0 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxRange * 4.0 ) );
 
 	this.grid = new Grid();
 	// Grid.prototype.create = function(_wide, _high, _cellWide, _cellHigh, _objWide, _objHigh)
-	this.grid.create( this.gridWidth, this.gridHeight, this.areaWide / this.gridWidth, this.areaHigh / this.gridHeight, max, max );
+	this.grid.create( this.gridWidth, this.gridHeight, this.areaWide / this.gridWidth, this.areaHigh / this.gridHeight, this.maxAxis * this.attract_range, this.maxAxis * this.attract_range );
 
 	this.list = [];
 	for ( var i = 0; i < this.numEllipse; i++ )
@@ -363,7 +364,7 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 	var ex = e.x - e.ax * Math.cos( e.angle ) * this.pivot;
 	var ey = e.y - e.ax * Math.sin( e.angle ) * this.pivot;
 
-	var r2 = this.attract_range * this.attract_range;
+	var r2 = this.maxAxis * this.maxAxis;
 
 	for ( var i = 0, l = list.length; i < l; i++ )
 	{
@@ -399,12 +400,10 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 };
 
 
-ObjManager.prototype.interact = function( e, quickExit )
+ObjManager.prototype.collide = function( e, quickExit )
 {
 	if ( this.majorAxis == this.minorAxis )
 		return this.circleCollide( e );
-
-	var who = null;
 
 	var list = this.grid.neighbours( e, true );
 	var collList = [];
@@ -421,33 +420,79 @@ ObjManager.prototype.interact = function( e, quickExit )
 			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
 
 			// more accurate system for collision detection
-//			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
-			if (ellipseEllipseCollide(ex, ey, e.ax * this.attract_range, e.by * this.attract_range, e.angle, cx, cy, c.ax * this.attract_range, c.by * this.attract_range, c.angle))
+			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
 			{
 				var dx = cx - ex;
 				var dy = cy - ey;
 				var d2 = dx * dx + dy * dy;
 				var d = Math.sqrt( d2 );
 				var a = Math.atan2( dy, dx );
-				//var r1 = ellipseRadius( e.ax, e.by, e.angle, a - Math.PI );
-				//var r2 = ellipseRadius( c.ax, c.by, c.angle, a );
+
+				// store collision partials
+				e.coll = {
+					d: d,
+					a: a
+				};
+				c.coll = {
+					d: d,
+					a: a - Math.PI
+				};
+				collList.push( c );
+
+				if (quickExit)
+					break;
+			}
+		}
+	}
+
+	return collList;
+};
+
+
+ObjManager.prototype.interact = function( e )
+{
+	var who = null;
+
+	var list = this.grid.neighbours( e, true );
+	var collList = [];
+
+	var ex = e.x - e.ax * Math.cos( e.angle ) * this.pivot;
+	var ey = e.y - e.ax * Math.sin( e.angle ) * this.pivot;
+
+	// is the ellipse 'e' inside the (elliptical scaled) attract_range of any other ellipse
+	for ( var i = 0, l = list.length; i < l; i++ )
+	{
+		var c = list[ i ];
+		if ( c && c != e )
+		{
+			var cx = c.x - c.ax * Math.cos( c.angle ) * this.pivot;
+			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
+
+			if (ellipseEllipseCollide(ex, ey, e.ax * this.attract_range, e.by * this.attract_range, e.angle, cx, cy, c.ax * this.majorAxis, c.by * this.minorAxis, c.angle))
+			{
+				var dx = cx - ex;
+				var dy = cy - ey;
+				var d2 = dx * dx + dy * dy;
+				var d = Math.sqrt( d2 );
+				var a = Math.atan2( dy, dx );
+				var r1 = ellipseRadius( e.ax, e.by, e.angle, a );
+				var r2 = ellipseRadius( c.ax, c.by, c.angle, a - Math.PI );
 
 				// store collision partials
 				// the collision point is approximated as being along the radius joining the two centres
 				e.coll = {
 					d: d,
 					a: a,
-					r: ellipseRadius( e.ax, e.by, e.angle, a )
+					rm: r1, 
+					rh: r2
 				};
 				c.coll = {
 					d: d,
 					a: a - Math.PI,
-					r: ellipseRadius( c.ax, c.by, c.angle, a - Math.PI )
+					rm: r2,
+					rh: r1
 				};
 				collList.push( c );
-
-				if (quickExit)
-					break;
 			}
 		}
 	}
@@ -476,12 +521,17 @@ ObjManager.prototype.forceAtRange = function(_range)
 {
 	var f = 0;
 
+	if (_range < 0)
+	{
+		return this.repel_force;
+	}
+
 	var d;
-	if (_range < this.repel_range)
+	if (_range < this.maxAxis * this.repel_range)
 	{
 		if (this.repel_range !== 0)
 		{
-			// d = 0 at repel_range, 1.0 at range 0
+			// d = 0 at repel_range, repel_force at range 0
 			d = this.repel_force * (this.repel_range - _range) / this.repel_range;
 			f += d * d * this.forceMultiplier;
 		}
@@ -492,7 +542,7 @@ ObjManager.prototype.forceAtRange = function(_range)
 	}
 	if (_range < this.maxAxis * this.attract_range)
 	{
-		// d = 0 at attract_range, 1.0 at range 0
+		// d = 0 at attract_range, attract_force at range 0
 		if (this.attract_range !== 0)
 		{
 			d = this.attract_force * (this.attract_range - _range) / this.attract_range;
