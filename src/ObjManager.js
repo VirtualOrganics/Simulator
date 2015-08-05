@@ -34,7 +34,7 @@ function ObjManager( docId )
 	this.showTrail = 0;
 	this.areaWide = 400;
 	this.areaHigh = 400;
-	this.periodicBoundary = 3;
+	this.periodicBoundary = 0;
 	this.boundary = 90;
 	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
@@ -42,9 +42,9 @@ function ObjManager( docId )
 
 	this.forceMultiplier = 1.0;
 	this.push_distance = 1.0;
-	this.damping = 0;
+	this.damping = 20;
 	this.speed_damping = 1000 - this.damping;
-	this.damping_maximum = 3.0;
+	this.damping_maximum = 6.0;
 	this.repel_force = 1.0;
 	this.repel_range = 22.0;
 	this.attract_force = 0.9;
@@ -380,7 +380,8 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 				// store collision information on the collided particles
 				c.coll = {
 					d: d,
-					a: a
+					a: a,
+					r: this.majorAxis
 				};
 				// store all collisions in the collList
 				collList.push( c );
@@ -431,11 +432,13 @@ ObjManager.prototype.interact = function( e, quickExit )
 				// the collision point is approximated as being along the radius joining the two centres
 				e.coll = {
 					d: d,
-					a: a
+					a: a,
+					r: ellipseRadius( e.ax, e.by, e.angle, a )
 				};
 				c.coll = {
 					d: d,
-					a: a - Math.PI
+					a: a - Math.PI,
+					r: ellipseRadius( c.ax, c.by, c.angle, a - Math.PI )
 				};
 				collList.push( c );
 

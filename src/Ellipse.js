@@ -63,7 +63,7 @@ Ellipse.prototype.update = function()
 
 	// apply speed damping
 	var velocityAngle = Math.atan2(this.vy, this.vx);
-	this.angle = this.turnTowards(this.angle, velocityAngle, 0.01);
+	this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	var newSpeed;
 	if (this.parent.damping_maximum === 0)
@@ -201,7 +201,8 @@ Ellipse.prototype.applyForces = function(c)
 	var a = c.coll.a;
 
 	// apply half of the total force to each of the two ellipses
-	var force = this.parent.forceAtRange(c.coll.d) * 0.5;
+	var separation = c.coll.d - c.coll.r;
+	var force = this.parent.forceAtRange(separation) * 0.5;
 	if (force !== 0)
 	{
 		var pushx = Math.cos(a) * force;

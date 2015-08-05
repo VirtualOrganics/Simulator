@@ -57,7 +57,7 @@ Grapher.prototype.create = function(_fnc, _context, _start, _end, _step, _radius
 	this.ctxSrc.strokeStyle = "#ffffff";
 	for(i = _start; i < _end; i += _step)
 	{
-		v = this.fnc.call(this.fncContext, i);
+		v = this.fnc.call(this.fncContext, i - _radius);
 		this.ctxSrc.moveTo(i * scaleX, zeroY);
 		this.ctxSrc.lineTo(i * scaleX, zeroY + v * scaleY);
 	}
