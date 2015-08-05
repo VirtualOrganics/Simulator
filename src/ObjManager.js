@@ -24,7 +24,7 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 1100;
+	this.numEllipse = 500;
 	this.majorAxis = 5;
 	this.minorAxis = 5;
 	this.orderParameter = 0.0001;
@@ -40,8 +40,10 @@ function ObjManager( docId )
 	this.colorTrail = "#898989";
 	this.colorEllipse = "#7fff7f";
 
-	this.forceMultiplier = 0.5;
-	this.speed_damping = 1000;
+	this.forceMultiplier = 1.0;
+	this.damping = 30;
+	this.speed_damping = 1000 - this.damping;
+	this.damping_maximum = 3.0;
 	this.repel_force = 1.0;
 	this.repel_range = 22.0;
 	this.attract_force = 0.9;
@@ -87,7 +89,11 @@ function ObjManager( docId )
 
 	var forceFolder = gui.addFolder( "Forces" );
 	forceFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.1 );
-	forceFolder.add( this, "speed_damping" ).min( 800 ).max( 1000 ).step(2);
+	var sd = forceFolder.add( this, "damping" ).min( 0 ).max( 200 ).step(1);
+	sd.onFinishChange( function(value) {
+		_this.speed_damping = 1000 - value;
+	});
+	forceFolder.add( this, "damping_maximum" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
 	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 ).listen();
 	rf.onFinishChange( function(value) {
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
