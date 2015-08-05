@@ -40,9 +40,9 @@ function ObjManager( docId )
 	this.speed_damping = 1000 - this.damping;
 	this.damping_maximum = 8.1;
 	this.repel_force = 1.1;
-	this.repel_range = 2.0;
+	this.repel_range = 0.5;
 	this.attract_force = 0.9;
-	this.attract_range = 4.0;
+	this.attract_range = 1.0;
 
 	this.showTrail = 0;
 	this.areaWide = 400;

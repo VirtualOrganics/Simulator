@@ -176,8 +176,7 @@ Ellipse.prototype.wrap = function(_object)
 
 Ellipse.prototype.collisionResponse = function(c)
 {
-	var circles = this.ax + c.ax - c.coll.d;
-	if (circles > 0)
+	while (this.parent.maxAxis * 2.0 - c.coll.d > 0)
 	{
 		var a = c.coll.a;
 
@@ -205,8 +204,9 @@ Ellipse.prototype.applyForces = function(c)
 {
 	var a = c.coll.a;
 
-	// apply half of the total force to each of the two ellipses
+	// calculate the distance between the surfaces of the two ellipses
 	var separation = c.coll.d - (c.coll.rm + c.coll.rh);
+	// apply half of the total force to each of the two ellipses
 	var force = this.parent.forceAtRange(separation) * 0.5;
 	if (force !== 0)
 	{
