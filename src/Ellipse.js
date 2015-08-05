@@ -70,7 +70,8 @@ Ellipse.prototype.update = function()
 	this.move();
 
 	// apply speed damping
-	this.angle = Math.atan2(this.vy, this.vx);
+	var velocityAngle = Math.atan2(this.vy, this.vx);
+	this.angle = this.turnTowards(this.angle, velocityAngle);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	var newSpeed;
 	if (this.parent.damping_maximum === 0)
@@ -87,8 +88,8 @@ Ellipse.prototype.update = function()
 		newSpeed = actualSpeed * f;
 	}
 
-	this.vx = Math.cos(this.angle) * newSpeed;
-	this.vy = Math.sin(this.angle) * newSpeed;
+	this.vx = Math.cos(velocityAngle) * newSpeed;
+	this.vy = Math.sin(velocityAngle) * newSpeed;
 
 	// if we're interacting with other particles
 	var collList = this.parent.interact(this, false);
@@ -139,15 +140,7 @@ Ellipse.prototype.wrap = function(_object)
 			_object.x += this.parent.areaWide;
 		else
 		{
-			if (this.ignoreContact !== 2)
-			{
-				this.ignoreContact = 2;
-				_object.turnCount = this.parent.turnSteps;
-				if (this.angle < 0)
-					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
-				else
-					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
-			}
+			this.vx = Math.abs(this.vx);
 			_object.x = 0;
 		}
 	}
@@ -157,15 +150,7 @@ Ellipse.prototype.wrap = function(_object)
 			_object.x -= this.parent.areaWide;
 		else
 		{
-			if (this.ignoreContact !== 2)
-			{
-				this.ignoreContact = 2;
-				_object.turnCount = this.parent.turnSteps;
-				if (this.angle < 0)
-					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
-				else
-					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
-			}
+			this.vx = -Math.abs(this.vx);
 			_object.x = this.parent.areaWide - 1;
 		}
 	}
@@ -175,15 +160,7 @@ Ellipse.prototype.wrap = function(_object)
 			_object.y += this.parent.areaHigh;
 		else
 		{
-			if (this.ignoreContact !== 1)
-			{
-				this.ignoreContact = 1;
-				_object.turnCount = this.parent.turnSteps;
-				if (this.angle < -Math.PI / 2.0)
-					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
-				else
-					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
-			}
+			this.vy = Math.abs(this.vy);
 			_object.y = 0;
 		}
 	}
@@ -193,15 +170,7 @@ Ellipse.prototype.wrap = function(_object)
 			_object.y -= this.parent.areaHigh;
 		else
 		{
-			if (this.ignoreContact !== 1)
-			{
-				this.ignoreContact = 1;
-				_object.turnCount = this.parent.turnSteps;
-				if (this.angle >= Math.PI / 2.0)
-					_object.turnAmount = (this.parent.boundary * Math.PI / 180) / this.turnCount;
-				else
-					_object.turnAmount = -(this.parent.boundary * Math.PI / 180) / this.turnCount;
-			}
+			this.vy = -Math.abs(this.vy);
 			_object.y = this.parent.areaHigh - 1;
 		}
 	}
