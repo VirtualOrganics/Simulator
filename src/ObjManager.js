@@ -24,9 +24,9 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 500;
-	this.majorAxis = 5;
-	this.minorAxis = 5;
+	this.numEllipse = 150;
+	this.majorAxis = 7;
+	this.minorAxis = 3;
 	this.orderParameter = 0.0001;
 	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
@@ -41,7 +41,7 @@ function ObjManager( docId )
 	this.colorEllipse = "#7fff7f";
 
 	this.forceMultiplier = 1.0;
-	this.damping = 30;
+	this.damping = 0;
 	this.speed_damping = 1000 - this.damping;
 	this.damping_maximum = 3.0;
 	this.repel_force = 1.0;

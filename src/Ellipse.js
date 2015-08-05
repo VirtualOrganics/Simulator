@@ -16,14 +16,8 @@ function Ellipse()
 	this.x = 0;
 	this.y = 0;
 	this.angle = 0;
-	this.turnAmount = 0;
-	this.turnCount = 0;
-	this.deflection = 0;
-	this.deflectionSpeed = 0;
 	this.ax = 0;
 	this.by = 0;
-	this.speed = 0;
-	this.ignoreContact = null;
 	this.vx = 0;
 	this.vy = 0;
 	this.trail = null;
@@ -43,8 +37,6 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 	this.angle = angle;
 	this.ax = ax;
 	this.by = by;
-	this.speed = speed;
-	this.ignoreContact = null;
 	this.vx = Math.cos(this.angle) * speed;
 	this.vy = Math.sin(this.angle) * speed;
 	this.trail = [];
@@ -71,7 +63,7 @@ Ellipse.prototype.update = function()
 
 	// apply speed damping
 	var velocityAngle = Math.atan2(this.vy, this.vx);
-	this.angle = this.turnTowards(this.angle, velocityAngle);
+	this.angle = this.turnTowards(this.angle, velocityAngle, 0.01);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	var newSpeed;
 	if (this.parent.damping_maximum === 0)
@@ -300,7 +292,7 @@ Ellipse.prototype.drawEllipse = function()
 Ellipse.prototype.draw = function(ctx, showTrail)
 {
 	ctx.translate(this.x, this.y);
-	var turn = this.angle + this.deflection;
+	var turn = this.angle;
 	ctx.rotate(turn);
 	ctx.drawImage(Ellipse.shape, -this.ax - this.ax * this.parent.pivot, -this.by);
 	ctx.rotate(-turn);
@@ -342,5 +334,13 @@ Ellipse.prototype.drawTrail = function(ctx)
 		}
 	}
 	ctx.stroke();
+};
+
+
+Ellipse.prototype.turnTowards = function(_angleNow, _angleDst, _turnPct)
+{
+	var da = _angleDst - _angleNow;
+	var turn = Math.atan2(Math.sin(da), Math.cos(da));
+	return _angleNow + turn * _turnPct;
 };
 
