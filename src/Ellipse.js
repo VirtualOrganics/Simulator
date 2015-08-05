@@ -61,13 +61,13 @@ Ellipse.prototype.update = function()
 	// move and update grid and trail
 	this.move();
 
+	var velocityAngle = Math.atan2(this.vy, this.vx);
+	this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
+
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	// there's no damping if we aren't at the damping_start speed
  	if (actualSpeed > this.parent.damping_start)	
  	{
-		var velocityAngle = Math.atan2(this.vy, this.vx);
-		
-		this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
 		var newSpeed;
 		if (this.parent.damping_maximum === 0)
 		{
@@ -182,8 +182,7 @@ Ellipse.prototype.wrap = function(_object)
 
 Ellipse.prototype.collisionResponse = function(c)
 {
-	while (this.parent.maxAxis * 2.0 - c.coll.d > 0)
-	{
+	do {
 		var a = c.coll.a;
 
 		// push the collision apart
@@ -202,7 +201,7 @@ Ellipse.prototype.collisionResponse = function(c)
 		var dx = this.x - c.x;
 		var dy = this.y - c.y;
 		c.coll.d = Math.sqrt(dx * dx + dy * dy);
-	}
+	} while (this.parent.minAxis * 2.0 - c.coll.d > 0);
 };
 
 

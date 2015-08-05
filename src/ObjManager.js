@@ -38,12 +38,12 @@ function ObjManager( docId )
 	this.forceMultiplier = 0.1;
 	this.damping = 35;
 	this.speed_damping = 1000 - this.damping;
-	this.damping_start = 4.1;
-	this.damping_maximum = 8.1;
+	this.damping_start = 2.1;
+	this.damping_maximum = 4.1;
 	this.repel_force = 1.1;
-	this.repel_range = 0.5;
+	this.repel_range = 0.2;
 	this.attract_force = 0.9;
-	this.attract_range = 1.0;
+	this.attract_range = 2.1;
 
 	this.showTrail = 0;
 	this.areaWide = 400;
@@ -108,16 +108,16 @@ function ObjManager( docId )
 	rf.onChange( function(value) {
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
-	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 10.0 ).step( 0.05 ).listen();
+	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 5.0 ).step( 0.05 ).listen();
 	rr.onChange( function(value) {
 		if (value > _this.attract_range ) _this.attract_range = value;
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
-	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 4.0 ).step( 0.04 );
+	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.05 );
 	af.onChange( function(value) {
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
-	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
+	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 5.0 ).step( 0.05 ).listen();
 	ar.onChange( function(value) {
 		if (value < _this.repel_range ) _this.repel_range = value;
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
@@ -235,8 +235,8 @@ ObjManager.prototype.create = function()
 	canvas.width = this.areaWide;
 	canvas.height = this.areaHigh;
 
-	var maxRange = this.maxAxis * 2.0 * this.attract_range;
-	// grid must be bigger than the ellipses
+	var maxRange = (this.maxAxis + this.maxAxis * this.attract_range) * 2.0;
+	// grid must be bigger than the ellipse effect range
 	if ( this.areaWide / this.gridWidth < maxRange * 1.2 ) this.gridWidth = Math.ceil( this.areaWide / ( maxRange * 1.2 ) );
 	if ( this.areaHigh / this.gridHeight < maxRange * 1.2 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxRange * 1.2 ) );
 	// if grid is too large it is less effective
