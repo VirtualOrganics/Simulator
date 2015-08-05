@@ -27,6 +27,8 @@ function ObjManager( docId )
 	this.numEllipse = 150;
 	this.majorAxis = 7;
 	this.minorAxis = 3;
+	this.maxAxis = Math.max(this.majorAxis, this.minorAxis);
+	this.minAxis = Math.min(this.majorAxis, this.minorAxis);
 	this.orderParameter = 0.0001;
 	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
@@ -46,9 +48,9 @@ function ObjManager( docId )
 	this.speed_damping = 1000 - this.damping;
 	this.damping_maximum = 6.0;
 	this.repel_force = 1.0;
-	this.repel_range = 22.0;
+	this.repel_range = 2.0;
 	this.attract_force = 0.9;
-	this.attract_range = 24.0;
+	this.attract_range = 4.0;
 
 	this.grapher = new Grapher();
 
@@ -73,12 +75,16 @@ function ObjManager( docId )
 	this.majorCtrl.onFinishChange( function( value )
 	{
 		if ( !value ) _this.majorAxis = 1;
+		_this.minAxis = Math.min(_this.majorAxis, _this.minorAxis);
+		_this.maxAxis = Math.max(_this.majorAxis, _this.minorAxis);
 		_this.restartFlag = true;
 	} );
 	this.minorCtrl = ellipseFolder.add( this, "minorAxis" ).min( 1 ).max( 30 ).step( 1 ).listen();
 	this.minorCtrl.onFinishChange( function( value )
 	{
 		if ( !value ) _this.minorAxis = 1;
+		_this.minAxis = Math.min(_this.majorAxis, _this.minorAxis);
+		_this.maxAxis = Math.max(_this.majorAxis, _this.minorAxis);
 		_this.restartFlag = true;
 	} );
 	var piv = ellipseFolder.add( this, "pivot" ).min( -5.0 ).max( 5.0 ).step( 0.2 );
@@ -97,21 +103,21 @@ function ObjManager( docId )
 	forceFolder.add( this, "damping_maximum" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
 	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 ).listen();
 	rf.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
-	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 25.0 ).step( 0.10 ).listen();
+	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 10.0 ).step( 0.05 ).listen();
 	rr.onFinishChange( function(value) {
 		if (value > _this.attract_range ) _this.attract_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
-	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
+	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 20.0 ).step( 0.10 );
 	af.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
 	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
 	ar.onFinishChange( function(value) {
 		if (value < _this.repel_range ) _this.repel_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
 	});
 
 	var grfxFolder = gui.addFolder( "World" );
@@ -226,10 +232,7 @@ ObjManager.prototype.create = function()
 	canvas.width = this.areaWide;
 	canvas.height = this.areaHigh;
 
-	var max = Math.max( this.minorAxis, this.majorAxis );
-	max = Math.max(max, this.attract_range);
-
-	var maxPivot = max * 2.0 + this.majorAxis * Math.abs( this.pivot );
+	var maxPivot = this.maxAxis * 2.0 + this.maxAxis * Math.abs( this.pivot );
 	// grid must be bigger than the ellipses
 	if ( this.areaWide / this.gridWidth < maxPivot * 1.2 ) this.gridWidth = Math.ceil( this.areaWide / ( maxPivot * 1.2 ) );
 	if ( this.areaHigh / this.gridHeight < maxPivot * 1.2 ) this.gridHeight = Math.ceil( this.areaHigh / ( maxPivot * 1.2 ) );
@@ -268,7 +271,7 @@ ObjManager.prototype.create = function()
 	this.numEllipse = this.list.length;
 
 	// draw graph of current attract/repel forces
-	this.grapher.create(this.forceAtRange, this, 0, 50, 1, Math.min(this.minorAxis, this.majorAxis), Math.max(this.minorAxis, this.majorAxis));
+	this.grapher.create(this.forceAtRange, this, 0, 50, 1, this.minAxis, this.maxAxis);
 };
 
 
@@ -381,7 +384,7 @@ ObjManager.prototype.circleCollide = function( e, quickExit )
 				c.coll = {
 					d: d,
 					a: a,
-					r: this.majorAxis
+					r: this.maxAxis
 				};
 				// store all collisions in the collList
 				collList.push( c );
@@ -418,7 +421,8 @@ ObjManager.prototype.interact = function( e, quickExit )
 			var cy = c.y - c.ax * Math.sin( c.angle ) * this.pivot;
 
 			// more accurate system for collision detection
-			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
+//			if (ellipseEllipseCollide(ex, ey, e.ax * 2.0, e.by * 2.0, e.angle, cx, cy, c.ax * 2.0, c.by * 2.0, c.angle))
+			if (ellipseEllipseCollide(ex, ey, e.ax * this.attract_range, e.by * this.attract_range, e.angle, cx, cy, c.ax * this.attract_range, c.by * this.attract_range, c.angle))
 			{
 				var dx = cx - ex;
 				var dy = cy - ey;
@@ -486,7 +490,7 @@ ObjManager.prototype.forceAtRange = function(_range)
 			f += this.forceMultiplier;
 		}
 	}
-	if (_range < this.attract_range)
+	if (_range < this.maxAxis * this.attract_range)
 	{
 		// d = 0 at attract_range, 1.0 at range 0
 		if (this.attract_range !== 0)
