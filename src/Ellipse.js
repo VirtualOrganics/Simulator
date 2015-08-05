@@ -83,19 +83,24 @@ Ellipse.prototype.update = function()
 	this.vx = Math.cos(velocityAngle) * newSpeed;
 	this.vy = Math.sin(velocityAngle) * newSpeed;
 
-	// if we're interacting with other particles
-	var collList = this.parent.interact(this, false);
+	var i, l;
+
+	// if we're colliding with other particles
+	var collList = this.parent.collide(this, false);
 	if (collList && collList.length > 0)
 	{
-		var i, l;
-
 		// push the particles apart to prevent overlapping forces
 		// sort collisions to deal with the closest point first ('d' = distance between them)
 		collList.sort(function(a, b) { return ((a.coll.d < b.coll.d) ? -1 : 1); });
 		for(i = 0, l = collList.length; i < l; i++)
 			this.collisionResponse(collList[i]);
+	}
 
-		// deal with each collision
+	// if we're interacting with other particle forces
+	collList = this.parent.interact(this, false);
+	if (collList && collList.length > 0)
+	{
+		// apply all forces
 		for(i = 0, l = collList.length; i < l; i++)
 			this.applyForces(collList[i]);
 	}
@@ -201,17 +206,17 @@ Ellipse.prototype.applyForces = function(c)
 	var a = c.coll.a;
 
 	// apply half of the total force to each of the two ellipses
-	var separation = c.coll.d - (this.coll.r + c.coll.r);
+	var separation = c.coll.d - (c.coll.rm + c.coll.rh);
 	var force = this.parent.forceAtRange(separation) * 0.5;
-	if (force > 0)
+	if (force !== 0)
 	{
 		var pushx = Math.cos(a) * force;
 		var pushy = Math.sin(a) * force;
-		this.vx -= pushx;
-		this.vy -= pushy;
+		this.vx += pushx;
+		this.vy += pushy;
 
-		c.vx += pushx;
-		c.vy += pushy;
+		c.vx -= pushx;
+		c.vy -= pushy;
 	}
 };
 
