@@ -201,9 +201,9 @@ Ellipse.prototype.applyForces = function(c)
 	var a = c.coll.a;
 
 	// apply half of the total force to each of the two ellipses
-	var separation = c.coll.d - c.coll.r;
+	var separation = c.coll.d - (this.coll.r + c.coll.r);
 	var force = this.parent.forceAtRange(separation) * 0.5;
-	if (force !== 0)
+	if (force > 0)
 	{
 		var pushx = Math.cos(a) * force;
 		var pushy = Math.sin(a) * force;
