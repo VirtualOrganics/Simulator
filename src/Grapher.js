@@ -41,27 +41,41 @@ Grapher.prototype.create = function(_fnc, _context, _start, _end, _step, _minRad
 	var zeroY = Math.abs(min) * scaleY;
 
 	// draw radius lines
-	this.ctxSrc.strokeStyle = "#000000";
+	this.ctxSrc.strokeStyle = "#0000ff";
 	this.ctxSrc.beginPath();
 	this.ctxSrc.moveTo(_minRad * 2.0 * scaleX, 0);
 	this.ctxSrc.lineTo(_minRad * 2.0 * scaleX, this.canvasSrc.height);
+	this.ctxSrc.stroke();
+	this.ctxSrc.strokeStyle = "#ff0000";
+	this.ctxSrc.beginPath();
 	this.ctxSrc.moveTo(_maxRad * 2.0 * scaleX, 0);
 	this.ctxSrc.lineTo(_maxRad * 2.0 * scaleX, this.canvasSrc.height);
 	this.ctxSrc.stroke();
 
 	// draw zero line
+	this.ctxSrc.strokeStyle = "#000000";
 	this.ctxSrc.beginPath();
 	this.ctxSrc.moveTo(0, zeroY);
 	this.ctxSrc.lineTo(this.canvasSrc.width, zeroY);
 	this.ctxSrc.stroke();
 
 	this.ctxSrc.beginPath();
-	this.ctxSrc.strokeStyle = "#ffffff";
+	this.ctxSrc.strokeStyle = "#ff7f7f";
 	for(i = _start; i < _end; i += _step)
 	{
 		v = this.fnc.call(this.fncContext, i - _maxRad);
 		this.ctxSrc.moveTo(i * scaleX, zeroY);
 		this.ctxSrc.lineTo(i * scaleX, zeroY + v * scaleY);
+	}
+	this.ctxSrc.stroke();
+
+	this.ctxSrc.beginPath();
+	this.ctxSrc.strokeStyle = "#7f7fff";
+	for(i = _start; i < _end; i += _step)
+	{
+		v = this.fnc.call(this.fncContext, i - _minRad);
+		this.ctxSrc.moveTo(i * scaleX - 1, zeroY);
+		this.ctxSrc.lineTo(i * scaleX - 1, zeroY + v * scaleY);
 	}
 	this.ctxSrc.stroke();
 };
