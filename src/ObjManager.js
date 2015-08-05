@@ -97,21 +97,21 @@ function ObjManager( docId )
 	forceFolder.add( this, "damping_maximum" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
 	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 ).listen();
 	rf.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var rr = forceFolder.add( this, "repel_range" ).min( 0.0 ).max( 25.0 ).step( 0.10 ).listen();
 	rr.onFinishChange( function(value) {
 		if (value > _this.attract_range ) _this.attract_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var af = forceFolder.add( this, "attract_force" ).min( 0.0 ).max( 5.0 ).step( 0.10 );
 	af.onFinishChange( function(value) {
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
 	});
 	var ar = forceFolder.add( this, "attract_range" ).min( 0.0 ).max( 50.0 ).step( 0.50 ).listen();
 	ar.onFinishChange( function(value) {
 		if (value < _this.repel_range ) _this.repel_range = value;
-		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.max(_this.minorAxis, _this.majorAxis));
+		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, Math.min(_this.minorAxis, _this.majorAxis), Math.max(_this.minorAxis, _this.majorAxis));
 	});
 
 	var grfxFolder = gui.addFolder( "World" );
@@ -268,7 +268,7 @@ ObjManager.prototype.create = function()
 	this.numEllipse = this.list.length;
 
 	// draw graph of current attract/repel forces
-	this.grapher.create(this.forceAtRange, this, 0, 50, 1, Math.max(this.minorAxis, this.majorAxis));
+	this.grapher.create(this.forceAtRange, this, 0, 50, 1, Math.min(this.minorAxis, this.majorAxis), Math.max(this.minorAxis, this.majorAxis));
 };
 
 
