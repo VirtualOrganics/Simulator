@@ -61,27 +61,33 @@ Ellipse.prototype.update = function()
 	// move and update grid and trail
 	this.move();
 
-	// apply speed damping
-	var velocityAngle = Math.atan2(this.vy, this.vx);
-	this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-	var newSpeed;
-	if (this.parent.damping_maximum === 0)
-	{
-		// always apply full damping
-		newSpeed = actualSpeed * (this.parent.speed_damping * 0.001);
-	}
-	else
-	{
-		// scale up the amount of damping as speed approaches the damping_maximum
-		var d = 1.0 - Math.min(1.0, actualSpeed / this.parent.damping_maximum);
-		var f = this.parent.speed_damping * 0.001;
-		f += (1.0 - f) * d;
-		newSpeed = actualSpeed * f;
-	}
+	// there's no damping if we aren't at the damping_start speed
+ 	if (actualSpeed > this.parent.damping_start)	
+ 	{
+		var velocityAngle = Math.atan2(this.vy, this.vx);
+		
+		this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
+		var newSpeed;
+		if (this.parent.damping_maximum === 0)
+		{
+			// apply full damping
+			newSpeed = actualSpeed * (this.parent.speed_damping * 0.001);
+		}
+		else
+		{
+			// scale up the amount of damping as speed approaches the damping_maximum
+			var s = actualSpeed - this.parent.damping_start;
+			var m = this.parent.damping_maximum - this.parent.damping_start;
+			var d = 1.0 - Math.min(1.0, s / m);
+			var f = this.parent.speed_damping * 0.001;
+			f += (1.0 - f) * d;
+			newSpeed = actualSpeed * f;
+		}
 
-	this.vx = Math.cos(velocityAngle) * newSpeed;
-	this.vy = Math.sin(velocityAngle) * newSpeed;
+		this.vx = Math.cos(velocityAngle) * newSpeed;
+		this.vy = Math.sin(velocityAngle) * newSpeed;
+	}
 
 	var i, l;
 

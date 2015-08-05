@@ -38,6 +38,7 @@ function ObjManager( docId )
 	this.forceMultiplier = 0.1;
 	this.damping = 35;
 	this.speed_damping = 1000 - this.damping;
+	this.damping_start = 4.1;
 	this.damping_maximum = 8.1;
 	this.repel_force = 1.1;
 	this.repel_range = 0.5;
@@ -101,7 +102,8 @@ function ObjManager( docId )
 	sd.onFinishChange( function(value) {
 		_this.speed_damping = 1000 - value;
 	});
-	forceFolder.add( this, "damping_maximum" ).min( 0.0 ).max( 20.0 ).step( 0.1 );
+	forceFolder.add( this, "damping_start" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
+	forceFolder.add( this, "damping_maximum" ).min( 0.0 ).max( 10.0 ).step( 0.1 );
 	var rf = forceFolder.add( this, "repel_force" ).min( 0.0 ).max( 4.0 ).step( 0.04 ).listen();
 	rf.onChange( function(value) {
 		_this.grapher.create(_this.forceAtRange, _this, 0, 50, 1, _this.minAxis, _this.maxAxis);
