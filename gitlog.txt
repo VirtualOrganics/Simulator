@@ -1,0 +1,461 @@
+commit 337af69bef76da81b82eece9439f322ba0eadfad
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Fri Aug 7 13:35:17 2015 +1200
+
+    Added "useEllipseColor" checkbox under "world".  When enabled the system will use the color the user has picked.  When disabled, the system will now color code the ellipses based on the direction of their movement... more blue for vertical motion, more red for horizontal motion.
+    Added "turn_percent" slider under "Ellipse".  This controls how rapidly the ellipses will turn to align their facing direction (their major axis) with their movement vector direction.  It is expressed as a percent of the difference per update tick.
+    Added force effects to skin-skin collisions.  This will cause ellipses to turn away from each other after a collision even when there are no attract/repel forces active.  Note it is not entirely physically correct, it is just a simple use of the contact to generate a small bounce vector, and then the "turn towards" system does the rest.
+
+commit 7b02400ab6e43e74bc5c7df46528916a1e99d777
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Aug 6 01:07:02 2015 +1200
+
+    Fix bug in physical collision resolution causing them to jump out to the major_axis distance.
+    The new version isn't perfect but it pushes out to the minor_axis distance and always pushes at least once even if they're already outside the minor axis distance (i.e. the accurate but slow ellipse-ellipse collision was detected but they're rotated so the centres are more than minor_axis * 2 apart).
+
+commit bc5444a25bcc68b9da8b0dffe6cbb95f428c4f7c
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Aug 6 00:36:14 2015 +1200
+
+    Added damping_start value.  If the speed of an object is less than this value, no damping will be applied.
+    If the speed is between damping_start and damping_maximum then damping will be applied as a linearly increasing amount to reach 'damping' amount at damping_maximum (and beyond).
+    This change allows particles which are within the speed limit (below damping_start) to move without any damping being applied.  The rapidity of the damping increase can be controlled by the 'damping' amount slider and/or the damping_maximum value.
+    After damping_maximum the amount of damping applied is fixed at 'damping'.
+
+commit 73242ab9cb1fb7c75fc484b4c432a3d0a54ae71a
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 17:17:51 2015 +1200
+
+    Attempt to fix overlapping errors if repel_force is set to zero.  Not entirely successful yet.
+    Ideally the collisionResponse should deal with this situation.
+
+commit 8bdbe042b17354a68add8f145f484e36fa6799fa
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 16:50:09 2015 +1200
+
+    Fix errors in forceAtRange equations.
+    Make forces work over narrower range but with greater precision.
+    Adjust force grapher widget dynamically as the user adjusts the force values.
+
+commit cf4a0900523a3f504fe19d12189b96b43c0a5476
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 15:48:32 2015 +1200
+
+    Fixed a number of errors in the force and interaction equations.
+
+commit 2b7fe689201988018de40bf130316c02c4b1c49f
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 15:47:02 2015 +1200
+
+    Separated the contact detection from the force field detection resulting in better results for both systems.
+
+commit 73ab97a238f2cf2fa2dbd6e20863e9bcb9e230e8
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:57:27 2015 +1200
+
+    Create maxAxis and minAxis parameters to avoid constantly checking majorAxis vs minorAxis to find out which way around they have been defined by the user.
+
+commit bb03c6585b90a58f33f93a92b548bec1675c9d8e
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:56:41 2015 +1200
+
+    Improve applyForces calculations.
+
+commit 213f08ec0fdb94588be329d80dac64d702eed9ce
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:35:59 2015 +1200
+
+    Modified grapher widget:
+    Blue line is minimum radius contact distance, red line is maximum radius contact distance.
+    Blue graph is the forces assuming minimum separation, red assumes maximum.
+    All interactions will be in the region between these two graphs, depending on the relative orientation of the two ellipses involved.
+
+commit d66641dedca364af3916a030dc57e42efb15062f
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:26:09 2015 +1200
+
+    Added second 'radius' line to grapher widget.  The lines now represent the minimum separation distance (using minorAxis * 2.0) and the maximum separation distance (majorAxis * 2.0) to show the range of separations possible when two equal sized ellipses are in contact.
+
+commit 7a84df6aa0ab4359fc63775542bb7a72fbf70de7
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:20:43 2015 +1200
+
+    Turned on periodic boundaries to test turnTowards logic.  When they bounce off the boundaries their velocity vector is immediately adjusted... their angle gradually turns to align with the new velocity vector (at 5% per update tick).
+    Also started change to forces to make the force distance be relative to the surface of the object instead of the centres... this will create the elliptically shaped force fields that we want to try.
+
+commit 82adf203c6d1a5ce9bb2bdf394def7a45d3ae277
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 14:05:43 2015 +1200
+
+    Fixed collision response for ellipses.
+    NOTE: forces are not working for ellipses, so currently we just have 'hard body' ellipses travelling in straight lines... the physical contact does not yet result in a velocity change so without forces the ellipses will always travel in their starting directions.
+
+commit 26ad439bd05cdb0b7efcb81865c89efb631ebfc1
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 13:34:21 2015 +1200
+
+    First attempt at turnTowards (complete structure changes).
+    Clean up of unused parameters.
+    NOTE: collisions seem to have broken, possibly a side-effect from turnTowards...
+
+commit 0ac67f23adb8890c46a536485a839b054076c343
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 13:21:42 2015 +1200
+
+    Quick fix to world-boundary response for the current velocity based movement.
+    Start of changes to make angle turn towards the velocity angle (incomplete).
+
+commit ec484c7885d44131e15247b57dda1e0648a046b8
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Aug 5 12:56:11 2015 +1200
+
+    Reversed speed_damping so that 0 is now "no damping" and 1000 would be "maximum damping" (no motion allowed).  The new "damping" slider goes from 0 to 200 permitting up to 20% damping.
+    Added new damping_maximum slider.  As the speed of a particle approaches the damping_maximum value, the amount of damping applied is gradually increased until it uses the full speed_damping value when the speed is greater or equal to the damping_maximum value.
+    This change permits us to have a simulation with very little damping for particles which are travelling at reasonable velocities, and increased damping for the ones which have picked up too much kinetic energy.
+
+commit b2d65151539bc983896c17fd72b5a162749b817a
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 15:36:53 2015 +1200
+
+    Change default settings... this one has some flow because the damping is 1000.  Might explode over time...
+
+commit e8135809d703a266c7ee4f4d3b5feac973db5c18
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 14:46:59 2015 +1200
+
+    Change default settings.
+
+commit bfc2199cc2b4720430d2847a80614d2ff5bfa941
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 14:41:34 2015 +1200
+
+    Changed forceAtRange equation to eliminate neutral_range (it wasn't working as intended and confused the meaning of the other two settings).
+    Improved grapher to show the graph more clearly.
+    Added zero line (horizontal) and contact line (vertical) as reference points to grapher.
+    Adjusted default settings.
+
+commit 52814ad8d292b0681a48833c9474ce9ac99198ba
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 13:51:12 2015 +1200
+
+    Reintroduced the concept of 'hard' body separation.  This is not entirely accurate as a body can be pushed out of one collision and into another, and that will not be resolved in this simplistic approach.  However it does somewhat relieve the problem of interpenetration causing absurdly large repulsion forces.
+
+commit 2c11ae49847f4902f2f7212d65a2d4c114dc5e9c
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 13:28:37 2015 +1200
+
+    Added grapher widget to display forces of attraction and repulsion across the entire range of interaction distances.
+    Added kineticEnergy display to allow user to monitor the effectiveness of damping.  Kinetic Energy assumes particle mass of 1.0 so it also reflects the average velocities (in pixels per update) of the particles.  If the velocity is greater or equal to half the minor axis length then the particles will interpenetrate to the point where the repulsion force will increase energy in the system.  Ideally the KE should be kept at or below 1.0.
+    Moved forceMultiplier and speed_damping to the Forces folder in the menus.
+
+commit 3c7c8277cf09b5bdd5c3db681ede0c59c362f83b
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 13:28:25 2015 +1200
+
+    Added grapher widget to display forces of attraction and repulsion across the entire range of interaction distances.
+    Added kineticEnergy display to allow user to monitor the effectiveness of damping.  Kinetic Energy assumes particle mass of 1.0 so it also reflects the average velocities (in pixels per update) of the particles.  If the velocity is greater or equal to half the minor axis length then the particles will interpenetrate to the point where the repulsion force will increase energy in the system.  Ideally the KE should be kept at or below 1.0.
+    Moved forceMultiplier and speed_damping to the Forces folder in the menus.
+
+commit ace2300fa01f546d08314cb9c875bafd3d22f767
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 12:22:50 2015 +1200
+
+    Fixed a number of bugs in the force system.
+    Removed deprecated 'velocity' slider.
+    Adjusted speed_damping to use values from 900-1000 (1000 = no damping) because dat.GUI doesn't handle decimal places correctly.
+
+commit c9ba6ce540a3320004ae298df7a804a77bddd088
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Mon Aug 3 11:53:50 2015 +1200
+
+    Modified damping equation (previous one was buggy).  1.0 = no damping, anything less applies a damping factor.  The speed of each particle is multiplied by damping each update, so multiplying by 0.8 (the current minimum value) will reduce the particle speed to 80% of its previous speed.  Typical values are in the range 0.95-0.99
+
+commit 8ec7d9e8c8a4963b00d7030c2c4799f008114dc3
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 18:18:46 2015 +1200
+
+    Use actual vx,vy to move particles instead of fixed speed.  Leave speed_damper to make actual speed gradually get closer to the desired 'velocity' value.
+
+commit 455a73494410630e12c4df7cc9cc1c23b31e6bbb
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 18:07:27 2015 +1200
+
+    Remove sort which orders the force resolution according to distance.  (Uneccessary in this formulation)
+
+commit b75767d2fe0b3240eacded22fc7ac10148f281ee
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 17:51:05 2015 +1200
+
+    All particles move always at the desired velocity value, the vx,vy vector is permitted to accumulate due to forces.
+    Added speed_damping value to make the vx,vy vector magnitude move closer to the desired velocity value.
+    Added force multipliers for repulsion and attraction as independent variables.  forceMultiplier is applied universally still.
+    NOTE: a bug is evident if attract_force is set to zero and repel_range is maxed at 15... the particles should bounce off each other but I'm seeing some clusters.  I suspect this is an error in the sort code which tries to handle the closest particles first.
+
+commit e74aeb988f431c1d402ff3d9bd4ede603cd7954c
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 16:13:54 2015 +1200
+
+    First attempt at forceAtRange (simple inverse square forces).
+    Adjusted ellipses with speed limit (velocity from the dropdown menus) applied along their vx,vy motion vector.
+
+commit d2dc77af2ef9a1f467efc81e525aa353738fb7e2
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 15:21:11 2015 +1200
+
+    Remove non-overlapping requirement on creation (almost impossible given that we're looking at the sphere of influence rather than the geometric size now).
+    Rename 'collide' to 'interact' to reflect the actual usage now.
+    Rename 'collisionResponse' to 'applyForces' due to changes.
+    Apply forces to velocity components of particles.
+    TODO: speed limit or damping to prevent system from gaining energy infinitely
+
+commit 23ca43eed136814afd333d3522f98fb4e468b0cb
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 15:18:49 2015 +1200
+
+    Apply limits to force ranges to ensure they are in order repel <= neutral <= attract.
+    Rename collide to 'interact' to reflect that the function no longer requires overlapping shapes.
+    Fix bug in circle collision based on radius of shape rather than radius of attract region.
+
+commit 69cbd40530d17a117cfa445deef69a90247188ff
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:49:13 2015 +1200
+
+    First pass modifications to ellipses to change system to using Morse Potential.
+    TODO: needs to apply forces to vx,vy and remove angle
+
+commit 5f52bb17e06e063c743ae7ea92cd51365cec0250
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:47:52 2015 +1200
+
+    First pass code additions to make demo use Morse Potential.
+    forceAtRange is currently just a placeholder for the final function that defines the equation.
+
+commit bf1248d4e89391df240eb4211116382597477bfb
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:46:23 2015 +1200
+
+    bug fix
+
+commit 5e463408c71fd34e2e3bc5fa898ac370362eee62
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:42:54 2015 +1200
+
+    Optimise Grid class whilst checking that it will continue to work with Morse Potential type particles.
+
+commit aa92ffce21fb4c449545e3027bf95b540ae4b71f
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:09:12 2015 +1200
+
+    Remove primary and secondary turning options.
+    Optimise collisions when majorAxis = minorAxis (circles instead of ellipses)
+
+commit b38ba9547a5a9f19582ae149032b6da7f8dc7708
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 29 14:08:17 2015 +1200
+
+    Better name for demo in menu.
+
+commit 7525a9b22ff975d8de1c2c758eda3af453603ed6
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Sat Jul 18 02:13:51 2015 +1200
+
+    Use multiple collision checks, one after each type of movement (translation, primary rotation and secondary rotation) to detect if the ellipse has started to (or is already) colliding.  For the post-rotation checks, undo the new rotation when a collision is detected.  (Translation still uses the force multiplier to push the shapes apart).
+
+commit 2b9288e68f41b210913e2f8a36385e3412d2189d
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Sat Jul 18 02:11:29 2015 +1200
+
+    Include secondary rotation angle in all parts of the ellipse collision function.
+
+commit ee5d1958fae949505f988c698009f6978325c947
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Fri Jul 17 13:09:26 2015 +1200
+
+    Fixed collision response problems with pivot point offsets by taking them into account in the new accurate ellipse-ellipse collision calls.
+    NOTE: pivot points that put the x,y of the ellipse a long way outside of the shape will cause problems with the world edges (the ellipses won't wrap around until the x,y of the pivot point passes the world boundaries).  I recommend using larger worlds to minimise the effect this will have in these cases.
+
+commit 6b970ddfa50b5ca82b6e8f358cbbd4c8877ab755
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Fri Jul 17 12:28:50 2015 +1200
+
+    Added accurate ellipse-ellipse collisions code using a bivariant solution from:
+    https://www.khanacademy.org/computer-programming/c/5567955982876672
+    This permits ellipses of any aspect ratio to collide accurately and is preparation for bug fixes to pivot offsets and secondary rotation systems.
+
+commit c4f286aa3d6050ed1d566410498a133d50270234
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Fri Jul 17 00:26:47 2015 +1200
+
+    Enabled pivots to go out to +5 and -5 (1 being half the length of the ellipse from it's centre).
+    Added "sensible" limits on the underlying collision grid, so the squares cannot be less than 120% the full length of an ellipse, or greater than 300% that length.  This will fix scenarios where the user changes the size of ellipses but forgets to adjust the grid and therefore sees lots of broken collisions.
+
+commit 51b52ab2641be554cdfc7de86dd33e68f02b1e53
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 10:52:32 2015 +1200
+
+    Fix bug in Grid which caused collisions to the left or top of each grid square to be skipped.
+    Double the collision size in Grid to detect cases where another ellipse is poking through the grid wall from the other side.
+    Tweak default simulation settings (grid changes will make the simulation run more slowly, decreased the number of initial ellipses to compensate).
+
+commit 8ff2d09b8a555e65f11129be63a8548676c3fa67
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 10:39:11 2015 +1200
+
+    Set more interesting default values for the simulation.
+    Reversed the pivot value (1 is front, -1 is rear now).
+
+commit 955eb3409dfbb73cd3c76d6a75f1c2429a123691
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 10:37:02 2015 +1200
+
+    Fixed bug in Grid which meant that vertical collisions at cell boundaries were not working correctly. (Typo in a label name).
+
+commit f604ce36efc1f7ab4522a56b88c413787a55ba60
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 09:35:00 2015 +1200
+
+    Adjustable pivot point.  Range is from -1 (the front of the ellipse) to +1 (the rear) with 0 being the centre of course.
+    This demo uses only 10 large ellipses in order to verify that the behavior of the pivot point and collisions is as expected.
+
+commit cc8cf5a947db605b6380ab10e6b7d43504f5e0ca
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 08:48:24 2015 +1200
+
+    Resolve multiple collisions on a single Ellipse in order from the deepest overlap to the most shallow.  This removes any inherent 'ordering' function based on list index position, and should also result in slightly better collision response in high density clusters.
+
+commit 5e70d9ffaac47c837fe029cc5596ec536f0c1988
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 08:38:55 2015 +1200
+
+    Set default grid to 10x10 to permit larger ellipses without overlapping the grid area.
+
+commit e4cd617656932b91d04901d89bd9c4cf43bc06b6
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 08:28:57 2015 +1200
+
+    Improve collision detection for oblate ellipses (by > ax)
+
+commit 5ee0adac7d4e74138fa4a6f16cd8f3ea88220fb9
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 08:28:29 2015 +1200
+
+    Fix minor bug with turning when the angle is exactly zero.
+
+commit 5b0e8884348c6f5524575f9b5683b49976a25534
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Thu Jul 16 07:56:47 2015 +1200
+
+    Added "showAngles" option to Ellipses sub-menu to control whether the nose angle/rear angle are drawn on the ellipses or not.
+
+commit ac96c5aef219821a0b5929f9158ede3b9075d90d
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 15 11:30:51 2015 +1200
+
+    Moved fps counter to bottom left to maximise the space available on the right for the menu system drop-downs.
+
+commit ca38b5faa6cb6e7d541767dc4f99de1769dc1fa8
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 15 11:28:49 2015 +1200
+
+    Changed deflectionDir options to "mirror" or "match". So the secondary rotation will either "match" the primary turn direction after a collision, or it will "mirror" it (spin in the opposite direction).
+
+commit 165baefdd3e212882197a3fd43ba6a5abae2bc5c
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 15 00:31:55 2015 +1200
+
+    Added "deflectionDir" drop down with global options: clockwise, counter, match.  The match setting means that the secondary rotation will match the direction of the primary turn.
+    I've moved the dat.GUI widget up a bit to leave space for the rapidly growing angles sub-menu.
+    TODO: we don't want a global setting for this, implement a unique choice for each contact-type
+    TODO: I'll need to split that into several further sub-menus to make space for the per-contact-type secondary turn settings (I can't put checkboxes on the same line as other widget using this system, so it's going to end up double the current height).
+
+commit 85b4ae2ebbe7ea61e39f3e3a500903eefbf6cbac
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:57:35 2015 +1200
+
+    Adjust deflection speed default value.
+
+commit b6ef57dcafca05421d3cbab35e4cf0445261668f
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:57:08 2015 +1200
+
+    Simplified torque rule for collision deflection speed.  When two ellipses bounce off each other, their deflectionSpeed is set to the direction of the bounce at the speed set by the option slider.
+
+commit 3a2b76f297d84f153c4d65e40f95be79e19d632f
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:28:23 2015 +1200
+
+    Added deflection speed setting to "Angles and Turns" menu (degrees per time-step).
+    Applied deflection speed as a constant to all ellipses when created (as a test of the logic).
+
+commit 48858f29523c39cb2fe8a86acca4917b55b6c220
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:22:37 2015 +1200
+
+    Deflection (secondary rotation) test with fixed permanent CW rotation of 0.01 radians per time-step.
+
+commit aeb1c8ec94d35ad274fa85b65b564a2300a1d63c
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:13:56 2015 +1200
+
+    Preparation for secondary rotation.
+    Improve settings for smoother flow and less jitter.
+
+commit 86ad0ddc7f54e69a8ffc46f8a9a8f8f8cce25406
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 14:08:49 2015 +1200
+
+    Adjust settings.
+
+commit bc76e51459267cf3262e026924e01abe2b65f3ee
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:22:14 2015 +1200
+
+    Simplification of the collision response force - moving back towards previous demos.  This version also includes the error in Ellipse.js line 233 where the point of contact was calculated incorrectly (a further attempt to restore swirling behaviour, or at least understand where it came from in early demos).
+
+commit 9263bb85c63e0cd97925f2fba699fa67d49e264d
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:04:22 2015 +1200
+
+    First commit of the latest version of the Ellipse simulation.
+
+commit 823ea64ac4533f214d9b9d4d4b772dee57c3efd4
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:02:21 2015 +1200
+
+    Commit of version "ellipse9" supplied by Michel.
+
+commit ab7cf32a1142bdb7c6e4a88f29476283bac50469
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Wed Jul 15 00:51:37 2015 +1200
+
+    Permit the world area to shrink down to 20x20 at the smallest.
+
+commit b22aa7b5976557ee82cb1f653622670befedc596
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:45:10 2015 +1200
+
+    Fixed the collision algorithm bug in the ellipse8 version of the simulation.
+
+commit bb8d70c5afb0afd3a4de0927d46cfaa30804ea73
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:44:36 2015 +1200
+
+    Using the new 'ellipse' drawing function in the ellipse8 demo.
+
+commit 51a85eedfb12b91633d8ada4d1fbedb7f0a72167
+Author: Pete Baron <simoleste@gmail.com>
+Date:   Tue Jul 14 12:00:35 2015 +1200
+
+    First commit of version "ellipse8" supplied by Michel.
+
+commit 3cdd056509203c494a5aaff735eb7e6c39d179ff
+Author: Virtual Organics <michelvandegaer@gmail.com>
+Date:   Mon Jul 13 21:22:53 2015 +0200
+
+    Update README.md
+
+commit aa9b2fb4529f694a1299055daebc82dffe71b0c9
+Author: Virtual Organics <michelvandegaer@gmail.com>
+Date:   Mon Jul 13 21:21:25 2015 +0200
+
+    Initial commit

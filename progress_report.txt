@@ -1,0 +1,265 @@
+Progress Report for Loops project.
+
+coding: Pete Baron
+concept and direction: Michel van de gaer
+
+7th August 2015
+
+
+The aim of the project is to create a particle simulation where collisions
+between particles can cascade and the overall movement of these particles will
+create looping vortices.
+Initially all experiments were undertaken in two dimensions in order to
+characterise the type of movement and collision rules necessary to achieve the
+loops.  If this process was successful, the next step would be to extend the
+work into three dimensions, at which time Michel hoped to see many interesting
+phenomena, including streams of particles which pass through the loops and
+then create loops of their own.
+
+At the start of the project the desire was to obtain the required interactions
+by physical contact alone.  This was attempted through the creation of what
+Michel described as a "tense gas" - a state where many particles are able to
+move freely, where particle interactions are frequent and will often lead to
+cascades of interactions.  In order to facilitate the desired looping be-
+haviour, the particles were given non-physically based collision responses such
+as "turn 90 degrees and make the other particle turn -45 degrees".  This was
+first implemented on 24/06/2015 as a particle simulation called 'dots' using
+pixels to represent particles.  It had 10000 dots moving in a 256x256 pixel
+'world' with periodicity at all borders.  After a quick round of optimisations
+the 'dots' demo was running quite smoothly in the browser, and showed some
+interesting behaviours but not self-perpetuating loops.
+
+The second demo 'ellipses' was created on 26/06/2015.  This demo used an
+internal representation of the particles, and drew them as a secondary process
+using the HTML Canvas drawing commands.  By separating the simulation from the
+drawing process it became possible to experiment with a wider variety of rules
+and operators than the purely pixel based approach had been able to manage.
+The code was continually modified over a number of weeks, with new features
+being added and tested on a regular basis.  These included:
+
+- resizable 'world area'
+- optimisation to make the simulation run more smoothly
+- collision rules that differentiate between the 'collider' and the 'collidee'
+- visible trails to make it easier to follow movement of each particle
+- collision zones which lead to different turning rules based on the contact
+points of both ellipses
+- adjustable simulation colours for ellipses, trails and the background
+
+We experimented with a number of different collision response techniques,
+starting with a small separation force that when applied over a number of ticks
+caused the ellipses to 'jitter' and resolve any 'stuck' scenarios via the rapid
+and semi-random changes to the relative offsets of each ellipse.  Over time
+this system was replaced by gradually improved ellipse-ellipse collisions until
+finally I discovered a decent equation that can be evaluated quite quickly to
+perfectly detect ellipse-ellipse collisions.  Thereafter the collision response
+was more solid and closer to a physically plausible reaction.
+
+At this point we had a simulation with a very large number of parameters and
+which runs quite smoothly in the browser making it very convenient for various
+experiments.  However we had not seen loops since the bug in the contact equa-
+tions had been fixed.
+
+A brief side experiment was undertaken using thin, long, physically 'solid'
+triangles in Unity.  The 'triangles' demo was created on 02/07/2015 and for the
+first test the parameters were all built into the code and no user-interface
+controls were provided.
+Unfortunately, although Unity proved capable of handling very large numbers of
+2D triangles with its reasonably accurate collision and response systems, the
+self-propelled triangles generally ended up forming nearly stationary polygonal
+clusters (with all the tips pointing in and the propulsion forces thereby
+cancelling each other out).  We did not see any interesting emergent behaviour,
+and the polygons were the only surprising results with all other interactions
+occurring as you might expect from a large number of moving triangles bumping
+into each other.
+
+We moved our attention back to the ellipses demo, and added new features
+(03/07/2015):
+
+- visual depiction of the multiple collision zones to make them easier to set
+- some general improvements to the usability of the simulation (pause, drag,
+crash protection)
+- ellipses rotate-over-time (instead of instant rotation to a new angle)
+- negative turn angles to allow ellipses to turn towards the collision point
+
+The features included a "primary turn over time" (where after a contact, the
+ellipse will turn for a certain number of steps for a fixed total angle of
+deflection).  At this time we were using a flawed ellipse-ellipse collision
+algorithm which had an implied bias toward turning left.  Because of this the
+simulation created what appeared to be the desired loops, although we were
+always concerned as to why the loops were consistently counter-clockwise.
+Next we added a global speed control.  The simulation runs with an implied
+time-step of 1.0, and all forces and contacts are resolved at every 'tick' of
+the update loop.  Reducing the speed allows more force and contact calculations
+to affect the ellipses as they traverse the same distance.  Increasing the
+speed has the opposite effect.  On 04/07/2015 Michel found some settings where
+the simulation generated multiple simultaneous loops.
+
+Some more new features:
+
+- orderParameter gives a measure of the average normalised velocity of ellipses
+in the system.  This can be used to observe phase-changes where all of the
+shapes start to align, and is a good measure of the level of chaos in the
+system (very low order implies the ellipses are moving randomly).
+- grid optimisations to make the simulation run more smoothly
+- colour coded grid occupancy display (as a first step towards voxels)
+- moved all source code into a github account to gain full version tracking and
+change control
+
+Following the move to github, all commits were accompanied with a message
+describing the work included.  I include these in the file gitlog.txt as an
+adjunct to this progress report.
+
+The counter-clockwise loops continued to concern us, and eventually after a
+very careful check of the code, several errors were discovered and corrected.
+Thereafter the purely physically based collisions gave results which were
+much more consistent with work done by other practitioners with self-propelled
+particles (SPP).
+
+A number of days were spent experimenting with various settings in an attempt
+to regain the smooth flowing loops that had vanished with the correction of the
+algorithm bugs.  We were not able to find suitable settings within the current
+parameter space, so after some discussion we decided to continue with the
+project by adding greater control of existing parameters, and some new features
+aimed specifically at the target behaviours.
+
+- simplification of the collision response forces.  This removed the 'jitter'
+and permitted better skin-to-skin contact results.
+- 'secondary rotation' was added to emulate the behaviour of physically based
+particles which have been set to spinning due to external forces (previously
+our self-propelled particles had always moved along their major axis)
+- experimentation with 'secondary rotation' lead to number of changes in the
+exact implementation and the controls available to the simulation user
+- collision response was altered to handle multiple collisions in order of the
+most severe overlap first, this greatly reduced the effect of high pressure
+areas which squash the ellipses and caused large forces in the simulation
+- added a movable pivot point so that the ellipses could rotate around a point
+other than their centres
+- switched the collisions to an entirely accurate bivariant solution found on:
+https://www.khanacademy.org/computer-programming/c/5567955982876672
+
+The aim of these changes was to facilitate tight packing of ellipses in a
+circular ring whilst still allowing them to move.  Michel linked many diagrams
+of such rings to illustrate the desired end result.  However even with the now
+hugely increased parameter space for the ellipses, we were unable to form loops
+or achieve the goal.  The github repo at around 18/07/2015 contains demos which
+include these new features in their final, bug-free and solidly colliding
+incarnations.
+
+At this point we decided to take a break to experiment with the demo and give
+ourselves time to think of alternative approaches or new ways to modify it to
+achieve the goal of getting 2d loops.
+
+29/07/2015
+
+We decided to attempt to add some forces, using either Lennard-Jones potential
+or the Morse Potential.  The implementation was algorithmic (as opposed to a
+single mathematical equation) which allowed use to blend interesting features
+from both approaches and control them with four simple sliders.
+As a part of this change, the SPP nature of the particles was removed, and we
+instead use a velocity vector for each ellipse which is affected by both the
+attractive and repulsive forces of the potential.  The ellipses then have a
+further processing step which turns them to align the major axis with the
+direction of the velocity vector over a number of processing ticks.  This gives
+us the possibility of the tightly packed ellipse rings that the 'secondary'
+rotation in the previous demo was intended to provide.
+Damping was added to counteract the observed gradual (or in some cases
+explosive!) increase in kinetic energy in the system.  This is a common problem
+with 'tick' based force simulations that occurs when a particles motion takes
+it deep into the force 'well' in a single step.
+A widget was added to visually depict the attract and repel forces and their
+interaction with each other as a 2d curve.  This was later extended to show the
+minimum and maximum forces which vary depending on the orientation of the two
+ellipses involved (the forces are modelled as elliptical fields aligned with
+the current major axis of the ellipse particle).
+
+At this point we spent a few days experimenting with the latest demo, and then
+started further changes to address the perceived problems (03/08/2015):
+
+- reintroduced 'hard body' contact, as the use of strong repulsive forces at
+close range to maintain separation was not working very well.  When the forces
+are strong enough to prevent intersection, the damping has to be extreme to 
+prevent the simulation exploding.
+- added a maximum damping range and scaled the amount of damping from zero to
+the maximum damping amount at and beyond that range.  This was intended to stop
+damping from bringing the simulation to a stop whilst still having a strong
+effect on ellipses which have gained too much energy.
+- adjusted the force algorithms to remove the 'neutral' range between repel and
+attract.  It wasn't working as intended and could cause discontinuities in the
+force gradients.
+- added a minimum damping range to entirely eliminate damping for ellipses
+which are travelling at a reasonable speed.  Now damping only applies when the
+speed is greater than damping_start, then it scales smoothly with speed until
+the maximum damping is again applied at or beyond the damping_maximum value.
+- improved the 'hard body' contact resolution, and included a velocity effect
+to make the ellipses turn after a physical contact in a semi-plausible manner.
+- added a turn speed parameter expressed as a percent of the angular difference
+between the velocity direction and the facing direction per update 'tick'.
+- added colour coding option for ellipses based on velocity components in the
+horizontal and vertical direction (red for horizontal, blue for vertical).
+
+07/08/2015
+
+This is the end of the budgetted time for this project.  I fully intend to keep
+playing with it as a part-time activity in the future... it's been very
+interesting and a lot of fun.
+
+Analysis:
+
+It is clear that any physically accurate simulation involving non-self-
+propelled particles will result in Brownian motion of some form.
+When dealing with SPPs it is necessary to design the turning rules very
+carefully to avoid either moving too far towards the physically accurate rules,
+or alternatively restricting their freedoms to the point where the interactions
+become uninteresting.  There is a fine balancing line to follow in both the
+settings and the algorithmic design of these systems.
+Using JS seems to be a highly effective way of generating SPP type simulations.
+Our results were always sufficiently smooth that we could experiment with many
+different settings in a reasonable time-frame, and observe the effect of those
+new settings in real-time as the simulation advanced.  Being able to view these
+demos in a browser also removes all platform dependent considerations.
+
+There are now several avenues of research still open for exploration:
+
+We did not attempt any Cellular Automata rules.  The nearest we go was the very
+first 'dots' demo but that did not process the whole frame at once and instead
+used the typical 'game design' approach of processing each particle
+individually.
+
+A suggestion made during development that was not yet followed is to build a
+hexagonal CA with some very simple interaction rules.  The motivation for using
+hex grids is that it offers the maximum degrees of freedom for a CA in a
+regular tesselating structure.
+
+It might be interesting to revist the ellipse8 and ellipse9 bugged demos with a
+view to attempting to encapsulate the buggy collisions as a new rule for our
+simulation.  This would entail understanding exactly why the inaccurate code
+caused loops in the first place, and then extending any principle found to
+permit loops in either direction whilst not forcing them.
+
+Conclusion:
+
+Unfortunately we did not achieve the aim of finding a "tense gas" of particles
+where interactions cascade to cause vortices.  We have created three very
+different demo platforms ('dots', 'ellipses', 'triangles', and 'ellipses with
+potential forces') and the only stable loops we have been able to create were
+the result of a bug in the collision functions.  That stage of the demo has
+been preserved in a github branch as ellipse8 and ellipse9.
+
+We have read a huge volume of articles and reports regarding SPPs, ellipse
+interactions, and various models which flow or show behaviours similar to the
+'boids' flocking - but without the intentionality of that simulation.
+
+The experiments have been interesting, however even after prolonged exposure to
+the concepts and demos, neither of us is currently able to say with certainty
+that a given approach will result in the formation of vortices.  However, we
+have fairly definitively explored a large range of simulation spaces and even
+larger parameter spaces.  And we have created several demos with interesting
+features in regards to particle-particle interactions with and without external
+forces.  It is entirely possible that the desired interaction lies within one
+of these simulations but because it is so sensitive to initial conditions or
+precise parameter settings, we have simply overlooked it so far.
+
+Regards,
+Pete
+
+7th August 2015
