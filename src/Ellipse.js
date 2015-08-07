@@ -8,6 +8,7 @@
 
 
 Ellipse.shape = null;
+Ellipse.num_angles = 0;
 
 
 function Ellipse()
@@ -54,6 +55,8 @@ Ellipse.prototype.create = function(parent, x, y, angle, ax, by, speed)
 
 Ellipse.prototype.update = function()
 {
+	var velocityAngle;
+
 	// if a something has reset the ellipse sprite, draw it again
 	if (!Ellipse.shape)
 		Ellipse.shape = this.drawEllipse();
@@ -61,8 +64,11 @@ Ellipse.prototype.update = function()
 	// move and update grid and trail
 	this.move();
 
-	var velocityAngle = Math.atan2(this.vy, this.vx);
-	this.angle = this.turnTowards(this.angle, velocityAngle, 0.05);
+	// deal with turning
+	velocityAngle = Math.atan2(this.vy, this.vx);
+	while(this.angle < -Math.PI) this.angle += Math.PI * 2.0;
+	while(this.angle >= Math.PI) this.angle -= Math.PI * 2.0;
+	this.angle = this.turnTowards(this.angle, velocityAngle, this.parent.turn_percent / 100.0);
 
 	var actualSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
 	// there's no damping if we aren't at the damping_start speed
@@ -182,6 +188,7 @@ Ellipse.prototype.wrap = function(_object)
 
 Ellipse.prototype.collisionResponse = function(c)
 {
+	var once = true;
 	do {
 		var a = c.coll.a;
 
@@ -196,6 +203,14 @@ Ellipse.prototype.collisionResponse = function(c)
 		c.x -= pushx;
 		c.y -= pushy;
 		this.parent.grid.move(c);
+
+		if (once)
+		{
+			this.vx += pushx;
+			this.vy += pushy;
+			c.vx -= pushx;
+			c.vy -= pushy;
+		}
 
 		// recalculate the separation distance after the separating move
 		var dx = this.x - c.x;
@@ -225,88 +240,122 @@ Ellipse.prototype.applyForces = function(c)
 	}
 };
 
+		// "40", "44", "48", "4c",
+		// "50", "54", "58", "5c",
+		// "60", "64", "68", "6c",
+		// "70", "74", "78", "7c",
+
+		// "00", "04", "08", "0c",
+		// "10", "14", "18", "1c",
+		// "20", "24", "28", "2c",
+		// "30", "34", "38", "3c",
 
 Ellipse.prototype.drawEllipse = function()
 {
-	var px, py, a, r;
+	var list = [];
+	var shades = [
+		// 0..PI angles
+		"f0","e0","d0","c0","b0","a0","90","80","70","60","50","40","30","20","10","00",
+		"00","10","20","30","40","50","60","70","80","90","a0","b0","c0","d0","e0","f0"
+		// mirrored in list for the other side PI..2*PI
+		];
 
-	var canvas = document.createElement("canvas");
-	var ctx = canvas.getContext("2d");
+	Ellipse.num_angles = shades.length;
 
-	ctx.canvas.width = this.ax * 2 + 2;
-	ctx.canvas.height = this.by * 2 + 2;
-	for(a = 0; a < Math.PI * 2; a += Math.PI * 0.01)
+	for(var i = 0; i < Ellipse.num_angles; i++)
 	{
-		r = ellipseRadius(this.ax, this.by, 0, a);
-		if (px === undefined)
+		var px, py, a, r;
+
+		var canvas = document.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+
+		ctx.canvas.width = this.ax * 2 + 2;
+		ctx.canvas.height = this.by * 2 + 2;
+		for(a = 0; a < Math.PI * 2; a += Math.PI * 0.01)
 		{
-			px = Math.cos(a) * r + this.ax;
-			py = Math.sin(a) * r + this.by;
-			ctx.beginPath();
-			ctx.moveTo(px, py);
+			r = ellipseRadius(this.ax, this.by, 0, a);
+			if (px === undefined)
+			{
+				px = Math.cos(a) * r + this.ax;
+				py = Math.sin(a) * r + this.by;
+				ctx.beginPath();
+				ctx.moveTo(px, py);
+			}
+			else
+			{
+				px = Math.cos(a) * r + this.ax;
+				py = Math.sin(a) * r + this.by;
+				ctx.lineTo(px, py);
+			}
 		}
+
+		ctx.closePath();
+
+		var j = i + Math.floor(Ellipse.num_angles / 2);
+		if (j >= Ellipse.num_angles) j -= Ellipse.num_angles;
+		if (this.parent.useEllipseColor)
+			ctx.fillStyle = this.parent.colorEllipse;
 		else
+			ctx.fillStyle = "#" + shades[i] + "3f" + shades[j];
+		ctx.fill();
+
+		if (Math.min(this.ax, this.by) > 3 && this.parent.showAngles)
 		{
+			// draw nose and rear angles if ellipse is not tiny
+			ctx.strokeStyle = "#003f3f";
+			a = this.parent.nose_angle * Math.PI / 180.0;
+			r = ellipseRadius(this.ax, this.by, 0, a);
+			ctx.moveTo(this.ax, this.by);
 			px = Math.cos(a) * r + this.ax;
 			py = Math.sin(a) * r + this.by;
 			ctx.lineTo(px, py);
+			ctx.stroke();
+			a = -this.parent.nose_angle * Math.PI / 180.0;
+			r = ellipseRadius(this.ax, this.by, 0, a);
+			ctx.moveTo(this.ax, this.by);
+			px = Math.cos(a) * r + this.ax;
+			py = Math.sin(a) * r + this.by;
+			ctx.lineTo(px, py);
+			ctx.stroke();
+			a = Math.PI + this.parent.rear_angle * Math.PI / 180.0;
+			r = ellipseRadius(this.ax, this.by, 0, a);
+			ctx.moveTo(this.ax, this.by);
+			px = Math.cos(a) * r + this.ax;
+			py = Math.sin(a) * r + this.by;
+			ctx.lineTo(px, py);
+			ctx.stroke();
+			a = Math.PI - this.parent.rear_angle * Math.PI / 180.0;
+			r = ellipseRadius(this.ax, this.by, 0, a);
+			ctx.moveTo(this.ax, this.by);
+			px = Math.cos(a) * r + this.ax;
+			py = Math.sin(a) * r + this.by;
+			ctx.lineTo(px, py);
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.arc(this.ax + this.ax * this.parent.pivot, this.by, 2.0, 0, Math.PI * 2.0);
+			ctx.stroke();
+			ctx.fillStyle = "#ffffff";
+			ctx.fill();
 		}
+
+		list[i] = canvas;
+		list[Ellipse.num_angles * 2 - i - 1] = canvas;
 	}
-
-	ctx.closePath();
-	ctx.fillStyle = this.parent.colorEllipse;
-	ctx.fill();
-
-	if (Math.min(this.ax, this.by) > 3 && this.parent.showAngles)
-	{
-		// draw nose and rear angles if ellipse is not tiny
-		ctx.strokeStyle = "#003f3f";
-		a = this.parent.nose_angle * Math.PI / 180.0;
-		r = ellipseRadius(this.ax, this.by, 0, a);
-		ctx.moveTo(this.ax, this.by);
-		px = Math.cos(a) * r + this.ax;
-		py = Math.sin(a) * r + this.by;
-		ctx.lineTo(px, py);
-		ctx.stroke();
-		a = -this.parent.nose_angle * Math.PI / 180.0;
-		r = ellipseRadius(this.ax, this.by, 0, a);
-		ctx.moveTo(this.ax, this.by);
-		px = Math.cos(a) * r + this.ax;
-		py = Math.sin(a) * r + this.by;
-		ctx.lineTo(px, py);
-		ctx.stroke();
-		a = Math.PI + this.parent.rear_angle * Math.PI / 180.0;
-		r = ellipseRadius(this.ax, this.by, 0, a);
-		ctx.moveTo(this.ax, this.by);
-		px = Math.cos(a) * r + this.ax;
-		py = Math.sin(a) * r + this.by;
-		ctx.lineTo(px, py);
-		ctx.stroke();
-		a = Math.PI - this.parent.rear_angle * Math.PI / 180.0;
-		r = ellipseRadius(this.ax, this.by, 0, a);
-		ctx.moveTo(this.ax, this.by);
-		px = Math.cos(a) * r + this.ax;
-		py = Math.sin(a) * r + this.by;
-		ctx.lineTo(px, py);
-		ctx.stroke();
-
-		ctx.beginPath();
-		ctx.arc(this.ax + this.ax * this.parent.pivot, this.by, 2.0, 0, Math.PI * 2.0);
-		ctx.stroke();
-		ctx.fillStyle = "#ffffff";
-		ctx.fill();
-	}
-
-	return canvas;
+	return list;
 };
 
 
 Ellipse.prototype.draw = function(ctx, showTrail)
 {
-	ctx.translate(this.x, this.y);
 	var turn = this.angle;
+//	var velocityAngle = Math.atan2(this.vy, this.vx);
+	var s = (turn / (Math.PI * 2.0)) * Ellipse.num_angles * 2.0;
+	if (s < 0) s += Ellipse.num_angles * 2.0;
+
+	ctx.translate(this.x, this.y);
 	ctx.rotate(turn);
-	ctx.drawImage(Ellipse.shape, -this.ax - this.ax * this.parent.pivot, -this.by);
+	ctx.drawImage(Ellipse.shape[Math.floor(s)], -this.ax - this.ax * this.parent.pivot, -this.by);
 	ctx.rotate(-turn);
 	ctx.translate(-this.x, -this.y);
 };

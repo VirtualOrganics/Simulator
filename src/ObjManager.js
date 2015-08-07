@@ -24,8 +24,8 @@ function ObjManager( docId )
 	this.gridWidth = 15;
 	this.gridHeight = 15;
 
-	this.numEllipse = 150;
-	this.majorAxis = 10;
+	this.numEllipse = 500;
+	this.majorAxis = 6;
 	this.minorAxis = 3;
 	this.maxAxis = Math.max(this.majorAxis, this.minorAxis);
 	this.minAxis = Math.min(this.majorAxis, this.minorAxis);
@@ -33,17 +33,18 @@ function ObjManager( docId )
 	this.kineticEnergy = 0.0001;
 	this.velocity = 1.0;
 	this.pivot = 0.0;
+	this.turn_percent = 10.0;
 	this.push_distance = 1.0;
 
-	this.forceMultiplier = 0.1;
+	this.forceMultiplier = 0.7;
 	this.damping = 35;
 	this.speed_damping = 1000 - this.damping;
 	this.damping_start = 2.1;
 	this.damping_maximum = 4.1;
 	this.repel_force = 1.1;
-	this.repel_range = 0.2;
+	this.repel_range = 1.4;
 	this.attract_force = 0.9;
-	this.attract_range = 2.1;
+	this.attract_range = 2.8;
 
 	this.showTrail = 0;
 	this.areaWide = 400;
@@ -52,6 +53,7 @@ function ObjManager( docId )
 	this.boundary = 90;
 	this.bgColor = "#101010";
 	this.colorTrail = "#898989";
+	this.useEllipseColor = true;
 	this.colorEllipse = "#7fff7f";
 
 	this.grapher = new Grapher();
@@ -94,7 +96,8 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
-	ellipseFolder. add( this, "push_distance" ).min(0.0).max(5.0).step(0.1);
+	ellipseFolder.add( this, "push_distance" ).min(0.0).max(5.0).step(0.1);
+	ellipseFolder.add( this, "turn_percent" ).min(0.0).max(100.0).step(0.25);
 
 	var forceFolder = gui.addFolder( "Forces" );
 	forceFolder.add( this, "forceMultiplier" ).min( 0.0 ).max( 2.0 ).step( 0.02 );
@@ -154,6 +157,10 @@ function ObjManager( docId )
 	{
 		Ellipse.shape = null;
 	} );
+	var uec = grfxFolder.add( this, "useEllipseColor" );
+	uec.onFinishChange( function(value) {
+		Ellipse.shape = null;
+	});
 
 
 	var gridFolder = gui.addFolder( "Grid" );
@@ -275,12 +282,6 @@ ObjManager.prototype.create = function()
 
 	// draw graph of current attract/repel forces
 	this.grapher.create(this.forceAtRange, this, 0, 50, 1, this.minAxis, this.maxAxis);
-};
-
-
-ObjManager.prototype.destroy = function()
-{
-	this.list = null;
 };
 
 
