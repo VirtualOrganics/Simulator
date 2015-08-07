@@ -228,7 +228,13 @@ individually.
 A suggestion made during development that was not yet followed is to build a
 hexagonal CA with some very simple interaction rules.  The motivation for using
 hex grids is that it offers the maximum degrees of freedom for a CA in a
-regular tesselating structure.
+regular tesselating structure.  Also, and possibly more important to this loop
+project: for every direction of travel two out of three possible collisions
+will result in them moving in different directions.  Giving a total of 6
+collision types that are linear vs 12 which will change the direction of both
+particles involved.  Compared to ellipses this amount of turning potential is
+trivial, however in the constrained world of a hex CA we might expect to see a
+lot more collisions given the same population density.
 
 It might be interesting to revist the ellipse8 and ellipse9 bugged demos with a
 view to attempting to encapsulate the buggy collisions as a new rule for our
